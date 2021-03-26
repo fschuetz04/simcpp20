@@ -4,10 +4,14 @@
 #include "simcpp20.hpp"
 
 namespace simcpp20 {
-await_event simulation::timeout(simtime delay) {
-  auto ev = std::make_shared<simcpp20::event>(*this);
+std::shared_ptr<simcpp20::event> simulation::timeout(simtime delay) {
+  auto ev = event();
   schedule(now() + delay, ev);
   return ev;
+}
+
+std::shared_ptr<simcpp20::event> simulation::event() {
+  return std::make_shared<simcpp20::event>(*this);
 }
 
 void simulation::schedule(simtime time, std::shared_ptr<simcpp20::event> ev) {
@@ -79,21 +83,24 @@ bool await_event::await_ready() { return ev->processed(); }
 
 void await_event::await_suspend(std::coroutine_handle<> handle) {
   ev->add_handle(handle);
+  ev = nullptr;
 }
 
 void await_event::await_resume() {}
 
-process simcpp20::process::promise_type::get_return_object() { return {}; }
+process process::promise_type::get_return_object() { return {}; }
 
-await_event simcpp20::process::promise_type::initial_suspend() {
+await_event process::promise_type::initial_suspend() {
   auto ev = std::make_shared<event>(sim);
   ev->trigger();
   return ev;
 }
 
-std::suspend_never simcpp20::process::promise_type::final_suspend() {
-  return {};
-}
+std::suspend_never process::promise_type::final_suspend() { return {}; }
 
-void simcpp20::process::promise_type::unhandled_exception() {}
+void process::promise_type::unhandled_exception() {}
+
+await_event process::promise_type::await_transform(std::shared_ptr<event> ev) {
+  return ev;
+}
 } // namespace simcpp20

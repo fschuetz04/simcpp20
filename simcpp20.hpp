@@ -17,7 +17,9 @@ struct await_event;
 
 class simulation {
 public:
-  await_event timeout(simtime delay);
+  std::shared_ptr<simcpp20::event> timeout(simtime delay);
+
+  std::shared_ptr<simcpp20::event> event();
 
   void schedule(simtime time, std::shared_ptr<simcpp20::event> ev);
 
@@ -99,6 +101,8 @@ struct process {
     std::suspend_never final_suspend();
 
     void unhandled_exception();
+
+    await_event await_transform(std::shared_ptr<event> ev);
   };
 };
 } // namespace simcpp20
