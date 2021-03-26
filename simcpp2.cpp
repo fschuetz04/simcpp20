@@ -83,17 +83,17 @@ void await_event::await_suspend(std::coroutine_handle<> handle) {
 
 void await_event::await_resume() {}
 
-process::promise_type::promise_type(simulation &sim) : sim(sim) {}
+process simcpp2::process::promise_type::get_return_object() { return {}; }
 
-process process::promise_type::get_return_object() { return {}; }
-
-await_event process::promise_type::initial_suspend() {
+await_event simcpp2::process::promise_type::initial_suspend() {
   auto ev = std::make_shared<event>(sim);
   ev->trigger();
   return ev;
 }
 
-std::suspend_never process::promise_type::final_suspend() { return {}; }
+std::suspend_never simcpp2::process::promise_type::final_suspend() {
+  return {};
+}
 
-void process::promise_type::unhandled_exception() {}
+void simcpp2::process::promise_type::unhandled_exception() {}
 } // namespace simcpp2

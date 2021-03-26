@@ -88,7 +88,8 @@ struct process {
   struct promise_type {
     simulation &sim;
 
-    promise_type(simulation &sim);
+    template <typename... Args>
+    promise_type(simulation &sim, Args &&...args) : sim(sim) {}
 
     process get_return_object();
 
