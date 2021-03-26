@@ -1,11 +1,12 @@
-C=$(shell command -v g++-10 || command -v g++)
 EXE=test
+C=$(shell command -v g++-10 || command -v g++)
 
-.PHONY: clean
+.PHONY: all clean
 
 all: $(EXE)
 
-%: %.cpp
-	$(C) -Wall -std=c++20 -fcoroutines $< -o $@
+%: %.cpp simcpp2.cpp
+	$(C) -Wall -std=c++20 -fcoroutines $^ -o $@
 
 clean:
+	rm -f $(EXE)
