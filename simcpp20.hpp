@@ -10,18 +10,23 @@
 #include <vector>
 
 namespace simcpp20 {
-using simtime = double;
 class scheduled_event;
 class event;
 struct await_event;
+using simtime = double;
+using event_ptr = std::shared_ptr<simcpp20::event>;
 
 class simulation {
 public:
-  std::shared_ptr<simcpp20::event> timeout(simtime delay);
+   timeout(simtime delay);
 
-  std::shared_ptr<simcpp20::event> event();
+  event_ptr event();
 
-  void schedule(simtime time, std::shared_ptr<simcpp20::event> ev);
+  event_ptr any_of();
+
+  event_ptr all_of();
+
+  void schedule(simtime time, event_ptr ev);
 
   void step();
 
@@ -38,17 +43,17 @@ private:
 
 class scheduled_event {
 public:
-  scheduled_event(simtime time, std::shared_ptr<event> ev);
+  scheduled_event(simtime time, event_ptr ev);
 
   bool operator<(const scheduled_event &other) const;
 
   simtime time() const;
 
-  std::shared_ptr<event> ev();
+  event_ptr ev();
 
 private:
   simtime _time;
-  std::shared_ptr<event> _ev;
+  event_ptr _ev;
 };
 
 enum class event_state { pending, triggered, processed };
@@ -78,9 +83,9 @@ private:
 };
 
 struct await_event {
-  std::shared_ptr<event> ev;
+  event_ptr ev;
 
-  await_event(std::shared_ptr<event> ev);
+  await_event(event_ptr ev);
 
   bool await_ready();
 
@@ -104,7 +109,7 @@ struct process {
 
     void unhandled_exception();
 
-    await_event await_transform(std::shared_ptr<event> ev);
+    await_event await_transform(event_ptr ev);
   };
 };
 } // namespace simcpp20
