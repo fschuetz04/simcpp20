@@ -1,4 +1,4 @@
-EXE=test
+EXE=example
 C=$(shell command -v g++-10 || command -v g++)
 
 .PHONY: all clean
