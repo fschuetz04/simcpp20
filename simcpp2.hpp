@@ -7,6 +7,7 @@
 #include <functional>
 #include <memory>
 #include <queue>
+#include <vector>
 
 namespace simcpp2 {
 using simtime = double;
