@@ -57,6 +57,8 @@ class event : public std::enable_shared_from_this<event> {
 public:
   event(simulation &sim);
 
+  ~event();
+
   void trigger();
 
   void process();

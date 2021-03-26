@@ -54,6 +54,12 @@ std::shared_ptr<event> scheduled_event::ev() { return _ev; }
 
 event::event(simulation &sim) : sim(sim) {}
 
+event::~event() {
+  for (auto &handle : handles) {
+    handle.destroy();
+  }
+}
+
 void event::trigger() {
   state = event_state::triggered;
   sim.schedule(0, shared_from_this());
@@ -90,11 +96,7 @@ void await_event::await_resume() {}
 
 process process::promise_type::get_return_object() { return {}; }
 
-await_event process::promise_type::initial_suspend() {
-  auto ev = std::make_shared<event>(sim);
-  ev->trigger();
-  return ev;
-}
+await_event process::promise_type::initial_suspend() { return sim.timeout(0); }
 
 std::suspend_never process::promise_type::final_suspend() { return {}; }
 
