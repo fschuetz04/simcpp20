@@ -4,10 +4,10 @@
 #include <coroutine>
 #include <iostream>
 
-#include "simcpp2.hpp"
+#include "simcpp20.hpp"
 
-simcpp2::process clock_proc(simcpp2::simulation &sim, std::string name,
-                            double delay) {
+simcpp20::process clock_proc(simcpp20::simulation &sim, std::string name,
+                             double delay) {
   while (true) {
     std::cout << name << " " << sim.now() << std::endl;
     co_await sim.timeout(delay);
@@ -15,7 +15,7 @@ simcpp2::process clock_proc(simcpp2::simulation &sim, std::string name,
 }
 
 int main() {
-  simcpp2::simulation sim;
+  simcpp20::simulation sim;
   clock_proc(sim, "fast", 1);
   clock_proc(sim, "slow", 2);
   sim.run_until(10);

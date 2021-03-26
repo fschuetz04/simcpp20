@@ -9,7 +9,7 @@
 #include <queue>
 #include <vector>
 
-namespace simcpp2 {
+namespace simcpp20 {
 using simtime = double;
 class scheduled_event;
 class event;
@@ -19,7 +19,7 @@ class simulation {
 public:
   await_event timeout(simtime delay);
 
-  void schedule(simtime time, std::shared_ptr<simcpp2::event> ev);
+  void schedule(simtime time, std::shared_ptr<simcpp20::event> ev);
 
   void step();
 
@@ -101,4 +101,4 @@ struct process {
     void unhandled_exception();
   };
 };
-} // namespace simcpp2
+} // namespace simcpp20
