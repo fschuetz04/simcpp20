@@ -4,17 +4,17 @@
 #include "simcpp20.hpp"
 
 namespace simcpp20 {
-std::shared_ptr<simcpp20::event> simulation::timeout(simtime delay) {
+event_ptr simulation::timeout(simtime delay) {
   auto ev = event();
   schedule(now() + delay, ev);
   return ev;
 }
 
-std::shared_ptr<simcpp20::event> simulation::event() {
+event_ptr simulation::event() {
   return std::make_shared<simcpp20::event>(*this);
 }
 
-void simulation::schedule(simtime time, std::shared_ptr<simcpp20::event> ev) {
+void simulation::schedule(simtime time, event_ptr ev) {
   scheduled_evs.emplace(time, ev);
 }
 
@@ -41,7 +41,7 @@ void simulation::run_until(simtime target) {
 
 simtime simulation::now() { return _now; }
 
-scheduled_event::scheduled_event(simtime time, std::shared_ptr<event> ev)
+scheduled_event::scheduled_event(simtime time, event_ptr ev)
     : _time(time), _ev(ev) {}
 
 bool scheduled_event::operator<(const scheduled_event &other) const {
@@ -50,7 +50,7 @@ bool scheduled_event::operator<(const scheduled_event &other) const {
 
 simtime scheduled_event::time() const { return _time; }
 
-std::shared_ptr<event> scheduled_event::ev() { return _ev; }
+event_ptr scheduled_event::ev() { return _ev; }
 
 event::event(simulation &sim) : sim(sim) {}
 
@@ -83,7 +83,7 @@ bool event::triggered() {
 
 bool event::processed() { return state == event_state::processed; }
 
-await_event::await_event(std::shared_ptr<event> ev) : ev(ev) {}
+await_event::await_event(event_ptr ev) : ev(ev) {}
 
 bool await_event::await_ready() { return ev->processed(); }
 
@@ -102,7 +102,5 @@ std::suspend_never process::promise_type::final_suspend() { return {}; }
 
 void process::promise_type::unhandled_exception() {}
 
-await_event process::promise_type::await_transform(std::shared_ptr<event> ev) {
-  return ev;
-}
+await_event process::promise_type::await_transform(event_ptr ev) { return ev; }
 } // namespace simcpp20
