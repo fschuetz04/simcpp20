@@ -14,6 +14,16 @@ event_ptr simulation::event() {
   return std::make_shared<simcpp20::event>(*this);
 }
 
+event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
+  // TODO
+  return event();
+}
+
+event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
+  // TODO
+  return event();
+}
+
 void simulation::schedule(simtime delay, event_ptr ev) {
   scheduled_evs.emplace(now() + delay, ev);
 }

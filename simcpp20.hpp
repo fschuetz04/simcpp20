@@ -22,6 +22,10 @@ public:
 
   event_ptr event();
 
+  event_ptr any_of(std::initializer_list<event_ptr> evs);
+
+  event_ptr all_of(std::initializer_list<event_ptr> evs);
+
   void schedule(simtime delay, event_ptr ev);
 
   void step();
