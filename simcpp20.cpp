@@ -33,8 +33,31 @@ event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
 }
 
 event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
-  // TODO
-  return event();
+  int n = evs.size();
+
+  for (auto &ev : evs) {
+    if (ev->processed()) {
+      --n;
+    }
+  }
+
+  if (n == 0) {
+    return timeout(0);
+  }
+
+  auto all_of_ev = event();
+  auto n_ptr = std::make_shared<int>(n);
+
+  for (auto &ev : evs) {
+    ev->add_callback([all_of_ev, n_ptr](event_ptr){
+      --*n_ptr;
+      if (*n_ptr == 0) {
+        all_of_ev->trigger();
+      }
+    });
+  }
+
+  return all_of_ev;
 }
 
 void simulation::schedule(simtime delay, event_ptr ev) {
