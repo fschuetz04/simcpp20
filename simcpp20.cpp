@@ -6,7 +6,7 @@
 namespace simcpp20 {
 event_ptr simulation::timeout(simtime delay) {
   auto ev = event();
-  schedule(now() + delay, ev);
+  schedule(delay, ev);
   return ev;
 }
 
@@ -14,8 +14,8 @@ event_ptr simulation::event() {
   return std::make_shared<simcpp20::event>(*this);
 }
 
-void simulation::schedule(simtime time, event_ptr ev) {
-  scheduled_evs.emplace(time, ev);
+void simulation::schedule(simtime delay, event_ptr ev) {
+  scheduled_evs.emplace(now() + delay, ev);
 }
 
 void simulation::step() {

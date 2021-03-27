@@ -22,7 +22,7 @@ public:
 
   event_ptr event();
 
-  void schedule(simtime time, event_ptr ev);
+  void schedule(simtime delay, event_ptr ev);
 
   void step();
 
