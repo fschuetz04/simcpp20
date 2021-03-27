@@ -104,13 +104,20 @@ void await_event::await_suspend(std::coroutine_handle<> handle) {
 
 void await_event::await_resume() {}
 
-process process::promise_type::get_return_object() { return {}; }
+process::process(event_ptr ev) : ev(ev) {}
+
+process process::promise_type::get_return_object() { return ev; }
 
 await_event process::promise_type::initial_suspend() { return sim.timeout(0); }
 
-std::suspend_never process::promise_type::final_suspend() { return {}; }
+std::suspend_never process::promise_type::final_suspend() {
+  ev->trigger();
+  return {};
+}
 
 void process::promise_type::unhandled_exception() {}
 
 await_event process::promise_type::await_transform(event_ptr ev) { return ev; }
+
+await_event process::promise_type::await_transform(process proc) { return proc.ev; }
 } // namespace simcpp20

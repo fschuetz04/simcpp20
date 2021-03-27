@@ -94,12 +94,12 @@ struct await_event {
   void await_resume();
 };
 
-struct process {
-  struct promise_type {
-    simulation &sim;
-
+class process {
+public:
+  class promise_type {
+  public:
     template <typename... Args>
-    promise_type(simulation &sim, Args &&...args) : sim(sim) {}
+    promise_type(simulation &sim, Args &&...args) : sim(sim), ev(sim.event()) {}
 
     process get_return_object();
 
@@ -110,6 +110,17 @@ struct process {
     void unhandled_exception();
 
     await_event await_transform(event_ptr ev);
+
+    await_event await_transform(process proc);
+
+  private:
+    simulation &sim;
+    event_ptr ev;
   };
+
+  process(event_ptr ev);
+
+private:
+  event_ptr ev;
 };
 } // namespace simcpp20
