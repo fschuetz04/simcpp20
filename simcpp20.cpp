@@ -15,8 +15,21 @@ event_ptr simulation::event() {
 }
 
 event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
-  // TODO
-  return event();
+  for (auto &ev : evs) {
+    if (ev->processed()) {
+      return timeout(0);
+    }
+  }
+
+  auto any_of_ev = event();
+
+  for (auto &ev : evs) {
+    ev->add_callback([any_of_ev](event_ptr _) {
+      any_of_ev->trigger();
+    });
+  }
+
+  return any_of_ev;
 }
 
 event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
@@ -92,6 +105,12 @@ void event::process() {
   }
 
   handles.clear();
+
+  for (auto &cb : cbs) {
+    cb(shared_from_this());
+  }
+
+  cbs.clear();
 }
 
 void event::add_handle(std::coroutine_handle<> h) {
@@ -102,6 +121,13 @@ void event::add_handle(std::coroutine_handle<> h) {
   handles.emplace_back(h);
 }
 
+void event::add_callback(std::function<void(event_ptr)> cb) {
+  if (processed()) {
+    return;
+  }
+
+  cbs.emplace_back(cb);
+}
 
 bool event::pending() { return state == event_state::pending; }
 

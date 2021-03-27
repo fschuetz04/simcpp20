@@ -10,7 +10,7 @@ simcpp20::process clock_proc(simcpp20::simulation &sim, std::string name,
                              double delay) {
   while (true) {
     std::cout << name << " " << sim.now() << std::endl;
-    co_await sim.timeout(delay);
+    co_await sim.any_of({sim.timeout(delay), sim.timeout(delay * 2)});
   }
 }
 

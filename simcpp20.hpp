@@ -70,6 +70,8 @@ public:
 
   void add_handle(std::coroutine_handle<> handle);
 
+  void add_callback(std::function<void(event_ptr)> cb);
+
   bool pending();
 
   bool triggered();
@@ -79,6 +81,7 @@ public:
 private:
   event_state state = event_state::pending;
   std::vector<std::coroutine_handle<>> handles = {};
+  std::vector<std::function<void(event_ptr)>> cbs = {};
   simulation &sim;
 };
 
