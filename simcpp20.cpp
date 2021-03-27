@@ -24,7 +24,7 @@ event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
   auto any_of_ev = event();
 
   for (auto &ev : evs) {
-    ev->add_callback([any_of_ev](event_ptr _) {
+    ev->add_callback([any_of_ev](event_ptr) {
       any_of_ev->trigger();
     });
   }
@@ -173,12 +173,12 @@ void await_event::await_resume() {}
 
 process::process(event_ptr ev) : ev(ev) {}
 
-process process::promise_type::get_return_object() { return ev; }
+process process::promise_type::get_return_object() { return proc_ev; }
 
 await_event process::promise_type::initial_suspend() { return sim.timeout(0); }
 
 std::suspend_never process::promise_type::final_suspend() {
-  ev->trigger();
+  proc_ev->trigger();
   return {};
 }
 

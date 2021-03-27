@@ -79,9 +79,9 @@ public:
   bool processed();
 
 private:
-  event_state state = event_state::pending;
   std::vector<std::coroutine_handle<>> handles = {};
   std::vector<std::function<void(event_ptr)>> cbs = {};
+  event_state state = event_state::pending;
   simulation &sim;
 };
 
@@ -102,7 +102,7 @@ public:
   class promise_type {
   public:
     template <typename... Args>
-    promise_type(simulation &sim, Args &&...args) : sim(sim), ev(sim.event()) {}
+    promise_type(simulation &sim, Args &&...) : sim(sim), proc_ev(sim.event()) {}
 
     process get_return_object();
 
@@ -118,7 +118,7 @@ public:
 
   private:
     simulation &sim;
-    event_ptr ev;
+    event_ptr proc_ev;
   };
 
   process(event_ptr ev);
