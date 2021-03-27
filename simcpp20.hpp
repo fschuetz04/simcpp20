@@ -18,7 +18,7 @@ using event_ptr = std::shared_ptr<simcpp20::event>;
 
 class simulation {
 public:
-  event_ptr timeout(simtime delay);
+   timeout(simtime delay);
 
   event_ptr event();
 
