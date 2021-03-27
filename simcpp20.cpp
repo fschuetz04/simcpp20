@@ -46,6 +46,7 @@ void simulation::run_until(simtime target) {
   while (!scheduled_evs.empty() && scheduled_evs.top().time() <= target) {
     step();
   }
+
   _now = target;
 }
 
@@ -71,19 +72,36 @@ event::~event() {
 }
 
 void event::trigger() {
+  if (triggered()) {
+    return;
+  }
+
   state = event_state::triggered;
   sim.schedule(0, shared_from_this());
 }
 
 void event::process() {
+  if (processed()) {
+    return;
+  }
+
   state = event_state::processed;
+
   for (auto &handle : handles) {
     handle.resume();
   }
+
   handles.clear();
 }
 
-void event::add_handle(std::coroutine_handle<> h) { handles.emplace_back(h); }
+void event::add_handle(std::coroutine_handle<> h) {
+  if (processed()) {
+    return;
+  }
+
+  handles.emplace_back(h);
+}
+
 
 bool event::pending() { return state == event_state::pending; }
 
