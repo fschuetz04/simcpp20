@@ -102,7 +102,8 @@ public:
   class promise_type {
   public:
     template <typename... Args>
-    promise_type(simulation &sim, Args &&...) : sim(sim), proc_ev(sim.event()) {}
+    promise_type(simulation &sim, Args &&...)
+        : sim(sim), proc_ev(sim.event()) {}
 
     process get_return_object();
 

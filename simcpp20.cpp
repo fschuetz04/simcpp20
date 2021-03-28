@@ -24,9 +24,7 @@ event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
   auto any_of_ev = event();
 
   for (auto &ev : evs) {
-    ev->add_callback([any_of_ev](event_ptr) {
-      any_of_ev->trigger();
-    });
+    ev->add_callback([any_of_ev](event_ptr) { any_of_ev->trigger(); });
   }
 
   return any_of_ev;
@@ -49,7 +47,7 @@ event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
   auto n_ptr = std::make_shared<int>(n);
 
   for (auto &ev : evs) {
-    ev->add_callback([all_of_ev, n_ptr](event_ptr){
+    ev->add_callback([all_of_ev, n_ptr](event_ptr) {
       --*n_ptr;
       if (*n_ptr == 0) {
         all_of_ev->trigger();
@@ -186,5 +184,7 @@ void process::promise_type::unhandled_exception() {}
 
 await_event process::promise_type::await_transform(event_ptr ev) { return ev; }
 
-await_event process::promise_type::await_transform(process proc) { return proc.ev; }
+await_event process::promise_type::await_transform(process proc) {
+  return proc.ev;
+}
 } // namespace simcpp20
