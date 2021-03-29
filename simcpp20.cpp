@@ -6,7 +6,7 @@
 namespace simcpp20 {
 event_ptr simulation::timeout(simtime delay) {
   auto ev = event();
-  schedule(delay, ev);
+  ev->trigger_delayed(delay);
   return ev;
 }
 
@@ -112,6 +112,14 @@ void event::trigger() {
 
   state = event_state::triggered;
   sim.schedule(0, shared_from_this());
+}
+
+void event::trigger_delayed(simtime delay) {
+  if (triggered()) {
+    return;
+  }
+
+  sim.schedule(delay, shared_from_this());
 }
 
 void event::process() {

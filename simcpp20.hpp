@@ -66,6 +66,8 @@ public:
 
   void trigger();
 
+  void trigger_delayed(simtime delay);
+
   void process();
 
   void add_handle(std::coroutine_handle<> handle);
