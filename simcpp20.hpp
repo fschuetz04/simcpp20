@@ -85,9 +85,8 @@ private:
   simulation &sim;
 };
 
-struct await_event {
-  event_ptr ev;
-
+class await_event {
+public:
   await_event(event_ptr ev);
 
   bool await_ready();
@@ -95,6 +94,9 @@ struct await_event {
   void await_suspend(std::coroutine_handle<> handle);
 
   void await_resume();
+
+private:
+  event_ptr ev;
 };
 
 class process {
