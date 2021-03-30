@@ -195,7 +195,7 @@ process process::promise_type::get_return_object() { return proc_ev; }
 
 await_event process::promise_type::initial_suspend() { return sim.timeout(0); }
 
-std::suspend_never process::promise_type::final_suspend() {
+std::suspend_never process::promise_type::final_suspend() noexcept {
   proc_ev->trigger();
   return {};
 }

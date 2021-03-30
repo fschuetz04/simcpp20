@@ -118,7 +118,7 @@ public:
 
     await_event initial_suspend();
 
-    std::suspend_never final_suspend();
+    std::suspend_never final_suspend() noexcept;
 
     void unhandled_exception();
 
