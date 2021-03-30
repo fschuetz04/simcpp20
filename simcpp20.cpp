@@ -6,16 +6,6 @@
 namespace simcpp20 {
 // simulation
 
-event_ptr simulation::timeout(simtime delay) {
-  auto ev = event();
-  ev->trigger_delayed(delay);
-  return ev;
-}
-
-event_ptr simulation::event() {
-  return std::make_shared<simcpp20::event>(*this);
-}
-
 event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
   for (auto &ev : evs) {
     if (ev->processed()) {

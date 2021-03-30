@@ -18,9 +18,16 @@ using event_ptr = std::shared_ptr<simcpp20::event>;
 
 class simulation {
 public:
-  event_ptr timeout(simtime delay);
+  template <typename T = simcpp20::event>
+  std::shared_ptr<T> timeout(simtime delay) {
+    auto ev = event<T>();
+    ev->trigger_delayed(delay);
+    return ev;
+  }
 
-  event_ptr event();
+  template <typename T = simcpp20::event> std::shared_ptr<T> event() {
+    return std::make_shared<T>(*this);
+  }
 
   event_ptr any_of(std::initializer_list<event_ptr> evs);
 
