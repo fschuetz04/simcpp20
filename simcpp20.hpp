@@ -12,7 +12,7 @@
 namespace simcpp20 {
 class scheduled_event;
 class event;
-struct await_event;
+class await_event;
 using simtime = double;
 using event_ptr = std::shared_ptr<simcpp20::event>;
 
@@ -26,8 +26,6 @@ public:
 
   event_ptr all_of(std::initializer_list<event_ptr> evs);
 
-  void schedule(simtime delay, event_ptr ev);
-
   void step();
 
   void run();
@@ -39,6 +37,10 @@ public:
 private:
   simtime _now = 0;
   std::priority_queue<scheduled_event> scheduled_evs = {};
+
+  void schedule(simtime delay, event_ptr ev);
+
+  friend class event;
 };
 
 class scheduled_event {
@@ -68,10 +70,6 @@ public:
 
   void trigger_delayed(simtime delay);
 
-  void process();
-
-  void add_handle(std::coroutine_handle<> handle);
-
   void add_callback(std::function<void(event_ptr)> cb);
 
   bool pending();
@@ -85,6 +83,13 @@ private:
   std::vector<std::function<void(event_ptr)>> cbs = {};
   event_state state = event_state::pending;
   simulation &sim;
+
+  void add_handle(std::coroutine_handle<> handle);
+
+  void process();
+
+  friend class simulation;
+  friend class await_event;
 };
 
 class await_event {

@@ -4,6 +4,8 @@
 #include "simcpp20.hpp"
 
 namespace simcpp20 {
+// simulation
+
 event_ptr simulation::timeout(simtime delay) {
   auto ev = event();
   ev->trigger_delayed(delay);
@@ -58,10 +60,6 @@ event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
   return all_of_ev;
 }
 
-void simulation::schedule(simtime delay, event_ptr ev) {
-  scheduled_evs.emplace(now() + delay, ev);
-}
-
 void simulation::step() {
   auto scheduled_ev = scheduled_evs.top();
   scheduled_evs.pop();
@@ -86,6 +84,12 @@ void simulation::run_until(simtime target) {
 
 simtime simulation::now() { return _now; }
 
+void simulation::schedule(simtime delay, event_ptr ev) {
+  scheduled_evs.emplace(now() + delay, ev);
+}
+
+// scheduled_event
+
 scheduled_event::scheduled_event(simtime time, event_ptr ev)
     : _time(time), _ev(ev) {}
 
@@ -96,6 +100,8 @@ bool scheduled_event::operator<(const scheduled_event &other) const {
 simtime scheduled_event::time() const { return _time; }
 
 event_ptr scheduled_event::ev() { return _ev; }
+
+// event
 
 event::event(simulation &sim) : sim(sim) {}
 
@@ -121,6 +127,22 @@ void event::trigger_delayed(simtime delay) {
 
   sim.schedule(delay, shared_from_this());
 }
+
+void event::add_callback(std::function<void(event_ptr)> cb) {
+  if (processed()) {
+    return;
+  }
+
+  cbs.emplace_back(cb);
+}
+
+bool event::pending() { return state == event_state::pending; }
+
+bool event::triggered() {
+  return state == event_state::triggered || state == event_state::processed;
+}
+
+bool event::processed() { return state == event_state::processed; }
 
 void event::process() {
   if (processed()) {
@@ -150,21 +172,7 @@ void event::add_handle(std::coroutine_handle<> h) {
   handles.emplace_back(h);
 }
 
-void event::add_callback(std::function<void(event_ptr)> cb) {
-  if (processed()) {
-    return;
-  }
-
-  cbs.emplace_back(cb);
-}
-
-bool event::pending() { return state == event_state::pending; }
-
-bool event::triggered() {
-  return state == event_state::triggered || state == event_state::processed;
-}
-
-bool event::processed() { return state == event_state::processed; }
+// await_event
 
 await_event::await_event(event_ptr ev) : ev(ev) {}
 
@@ -177,7 +185,11 @@ void await_event::await_suspend(std::coroutine_handle<> handle) {
 
 void await_event::await_resume() {}
 
+// process
+
 process::process(event_ptr ev) : ev(ev) {}
+
+// process::promise_type
 
 process process::promise_type::get_return_object() { return proc_ev; }
 
