@@ -138,9 +138,9 @@ public:
     event_ptr proc_ev;
   };
 
-  process(event_ptr ev);
-
 private:
   event_ptr ev;
+
+  process(event_ptr ev);
 };
 } // namespace simcpp20

@@ -175,10 +175,6 @@ void await_event::await_suspend(std::coroutine_handle<> handle) {
 
 void await_event::await_resume() {}
 
-// process
-
-process::process(event_ptr ev) : ev(ev) {}
-
 // process::promise_type
 
 process process::promise_type::get_return_object() { return proc_ev; }
@@ -197,4 +193,8 @@ await_event process::promise_type::await_transform(event_ptr ev) { return ev; }
 await_event process::promise_type::await_transform(process proc) {
   return proc.ev;
 }
+
+// process
+
+process::process(event_ptr ev) : ev(ev) {}
 } // namespace simcpp20
