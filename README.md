@@ -28,8 +28,22 @@ int main() {
   simcpp20::simulation sim;
   clock_proc(sim, "fast", 1);
   clock_proc(sim, "slow", 2);
-  sim.run_until(10);
+  sim.run_until(5);
 }
+```
+
+When run, the following output is generated:
+
+```
+fast 0
+slow 0
+fast 1
+slow 2
+fast 2
+fast 3
+slow 4
+fast 4
+fast 5
 ```
 
 ## Copyright and License

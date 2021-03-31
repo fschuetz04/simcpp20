@@ -18,5 +18,5 @@ int main() {
   simcpp20::simulation sim;
   clock_proc(sim, "fast", 1);
   clock_proc(sim, "slow", 2);
-  sim.run_until(10);
+  sim.run_until(5);
 }
