@@ -59,13 +59,13 @@ void simulation::step() {
 }
 
 void simulation::run() {
-  while (!scheduled_evs.empty()) {
+  while (!empty()) {
     step();
   }
 }
 
 void simulation::run_until(simtime target) {
-  while (!scheduled_evs.empty() && scheduled_evs.top().time() <= target) {
+  while (!empty() && scheduled_evs.top().time() <= target) {
     step();
   }
 
@@ -73,6 +73,8 @@ void simulation::run_until(simtime target) {
 }
 
 simtime simulation::now() { return _now; }
+
+bool simulation::empty() { return scheduled_evs.empty(); }
 
 void simulation::schedule(simtime delay, event_ptr ev) {
   scheduled_evs.emplace(now() + delay, ev);
