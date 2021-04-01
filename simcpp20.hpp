@@ -105,7 +105,7 @@ public:
 
 private:
   /// Current simulation time.
-  simtime _now = 0;
+  simtime now_ = 0;
 
   /// Event queue.
   std::priority_queue<scheduled_event> scheduled_evs = {};
@@ -150,10 +150,10 @@ public:
 
 private:
   /// Time at which to process the event.
-  simtime _time;
+  simtime time_;
 
   /// Event to process.
-  event_ptr _ev;
+  event_ptr ev_;
 };
 
 /// State of an event.

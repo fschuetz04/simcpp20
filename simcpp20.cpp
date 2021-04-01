@@ -54,7 +54,7 @@ void simulation::step() {
   auto scheduled_ev = scheduled_evs.top();
   scheduled_evs.pop();
 
-  _now = scheduled_ev.time();
+  now_ = scheduled_ev.time();
   scheduled_ev.ev()->process();
 }
 
@@ -69,10 +69,10 @@ void simulation::run_until(simtime target) {
     step();
   }
 
-  _now = target;
+  now_ = target;
 }
 
-simtime simulation::now() { return _now; }
+simtime simulation::now() { return now_; }
 
 bool simulation::empty() { return scheduled_evs.empty(); }
 
@@ -83,15 +83,15 @@ void simulation::schedule(simtime delay, event_ptr ev) {
 // scheduled_event
 
 scheduled_event::scheduled_event(simtime time, event_ptr ev)
-    : _time(time), _ev(ev) {}
+    : time_(time), ev_(ev) {}
 
 bool scheduled_event::operator<(const scheduled_event &other) const {
   return time() > other.time();
 }
 
-simtime scheduled_event::time() const { return _time; }
+simtime scheduled_event::time() const { return time_; }
 
-event_ptr scheduled_event::ev() { return _ev; }
+event_ptr scheduled_event::ev() { return ev_; }
 
 // event
 
