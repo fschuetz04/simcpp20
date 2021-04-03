@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <concepts>
 #include <coroutine>
 #include <functional>
 #include <memory>
@@ -28,13 +29,11 @@ public:
   /**
    * Create a pending event which will be processed after the given delay.
    *
-   * TODO(fschuetz04): Only enable if T is a subclass of event.
-   *
    * @tparam T Event class. Must be a subclass of simcpp20::event.
    * @param delay Delay after which the event will be processed.
    * @return Created event.
    */
-  template <typename T = simcpp20::event>
+  template <std::derived_from<simcpp20::event> T = simcpp20::event>
   std::shared_ptr<T> timeout(simtime delay) {
     auto ev = event<T>();
     ev->trigger_delayed(delay);
@@ -44,12 +43,11 @@ public:
   /**
    * Create a pending event.
    *
-   * TODO(fschuetz04): Only enable if T is a subclass of event.
-   *
    * @tparam T Event class. Must be a subclass of simcpp20::event.
    * @return Created event.
    */
-  template <typename T = simcpp20::event> std::shared_ptr<T> event() {
+  template <std::derived_from<simcpp20::event> T = simcpp20::event>
+  std::shared_ptr<T> event() {
     return std::make_shared<T>(*this);
   }
 

@@ -8,7 +8,7 @@ HDR=simcpp20.hpp
 all: $(EXE)
 
 %: %.cpp $(SRC) $(HDR)
-	$(CXX) -Wall -Wextra -fcoroutines $< $(SRC) -o $@
+	$(CXX) -std=c++20 -Wall -Wextra -fcoroutines $< $(SRC) -o $@
 
 clean:
 	rm -f $(EXE)
