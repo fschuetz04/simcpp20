@@ -1,12 +1,14 @@
 EXE=example
-C=$(shell command -v g++-10 || command -v g++)
+CXX=$(shell command -v g++-10 || command -v g++)
+SRC=simcpp20.cpp
+HDR=simcpp20.hpp
 
 .PHONY: all clean
 
 all: $(EXE)
 
-%: %.cpp simcpp20.cpp
-	$(C) -Wall -Wextra -fcoroutines $^ -o $@
+%: %.cpp $(SRC) $(HDR)
+	$(CXX) -Wall -Wextra -fcoroutines $< $(SRC) -o $@
 
 clean:
 	rm -f $(EXE)
