@@ -13,9 +13,10 @@
 namespace simcpp20 {
 class scheduled_event;
 class event;
-class await_event;
-using simtime = double;
+
 using event_ptr = std::shared_ptr<simcpp20::event>;
+using simtime = double;
+using id_type = uint64_t;
 
 /**
  * Used to run a discrete-event simulation.
@@ -106,7 +107,12 @@ private:
   simtime now_ = 0;
 
   /// Event queue.
-  std::priority_queue<scheduled_event> scheduled_evs = {};
+  std::priority_queue<scheduled_event, std::vector<scheduled_event>,
+                      std::greater<scheduled_event>>
+      scheduled_evs = {};
+
+  /// ID of the next scheduled event.
+  id_type next_id_ = 0;
 
   /**
    * Schedule the given event to be processed after the given delay.
@@ -126,19 +132,18 @@ public:
   /**
    * Construct a new scheduled event.
    *
-   * TODO(fschuetz04): Add an incrementing ID to sort events scheduled at the
-   * same time by insertion order.
-   *
    * @param time Time at which to process the event.
+   * @param id Incremental ID to sort events scheduled at the same time by
+   * insertion order.
    * @param ev Event to process.
    */
-  scheduled_event(simtime time, event_ptr ev);
+  scheduled_event(simtime time, id_type id, event_ptr ev);
 
   /**
    * @param other Scheduled event to compare to.
    * @return Whether this event is scheduled before the given event.
    */
-  bool operator<(const scheduled_event &other) const;
+  bool operator>(const scheduled_event &other) const;
 
   /// @return Time at which to process the event.
   simtime time() const;
@@ -149,6 +154,12 @@ public:
 private:
   /// Time at which to process the event.
   simtime time_;
+
+  /**
+   * Incremental ID to sort events scheduled at the same time by insertion
+   * order.
+   */
+  id_type id_;
 
   /// Event to process.
   event_ptr ev_;

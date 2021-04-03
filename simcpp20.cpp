@@ -77,16 +77,21 @@ simtime simulation::now() { return now_; }
 bool simulation::empty() { return scheduled_evs.empty(); }
 
 void simulation::schedule(simtime delay, event_ptr ev) {
-  scheduled_evs.emplace(now() + delay, ev);
+  scheduled_evs.emplace(now() + delay, next_id_, ev);
+  next_id_++;
 }
 
 // scheduled_event
 
-scheduled_event::scheduled_event(simtime time, event_ptr ev)
-    : time_(time), ev_(ev) {}
+scheduled_event::scheduled_event(simtime time, id_type id, event_ptr ev)
+    : time_(time), id_(id), ev_(ev) {}
 
-bool scheduled_event::operator<(const scheduled_event &other) const {
-  return time() > other.time();
+bool scheduled_event::operator>(const scheduled_event &other) const {
+  if (time() != other.time()) {
+    return time() > other.time();
+  }
+
+  return id_ > other.id_;
 }
 
 simtime scheduled_event::time() const { return time_; }
