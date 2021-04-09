@@ -16,7 +16,7 @@ simcpp20::process clock_proc(simcpp20::simulation &sim, std::string name,
 
 int main() {
   simcpp20::simulation sim;
-  clock_proc(sim, "fast", 1);
   clock_proc(sim, "slow", 2);
+  clock_proc(sim, "fast", 1);
   sim.run_until(5);
 }
