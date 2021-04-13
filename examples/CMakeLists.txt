@@ -1,2 +1,4 @@
-add_executable(clocks clocks.cpp)
-target_link_libraries(clocks PRIVATE simcpp20)
+foreach(Target clocks)
+    add_executable(${Target} ${Target}.cpp)
+    target_link_libraries(${Target} PRIVATE simcpp20)
+endforeach()
