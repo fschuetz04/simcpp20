@@ -3,5 +3,6 @@
 !*.hpp
 !*.md
 !.gitignore
-!Makefile
+!CMakeLists.txt
 !LICENSE
+!simcpp20
