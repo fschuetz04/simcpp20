@@ -62,7 +62,7 @@ If version 10 of GCC later is available under a different name (for example `g++
 If you do not want to use CMake, you can use the GCC directly:
 
 ```shell
-g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/simcpp20.cpp examples/clocks.cpp -o example_clocks
+g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/*.cpp examples/clocks.cpp -o example_clocks
 ./example_clocks
 ```
 

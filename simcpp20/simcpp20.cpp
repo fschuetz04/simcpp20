@@ -6,7 +6,8 @@
 namespace simcpp20 {
 // simulation
 
-event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
+std::shared_ptr<simcpp20::event> simulation::any_of(
+    std::initializer_list<std::shared_ptr<simcpp20::event>> evs) {
   for (auto &ev : evs) {
     if (ev->processed()) {
       return timeout(0);
@@ -16,13 +17,14 @@ event_ptr simulation::any_of(std::initializer_list<event_ptr> evs) {
   auto any_of_ev = event();
 
   for (auto &ev : evs) {
-    ev->add_callback([any_of_ev](event_ptr) { any_of_ev->trigger(); });
+    ev->add_callback([any_of_ev](auto) { any_of_ev->trigger(); });
   }
 
   return any_of_ev;
 }
 
-event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
+std::shared_ptr<simcpp20::event> simulation::all_of(
+    std::initializer_list<std::shared_ptr<simcpp20::event>> evs) {
   int n = evs.size();
 
   for (auto &ev : evs) {
@@ -39,7 +41,7 @@ event_ptr simulation::all_of(std::initializer_list<event_ptr> evs) {
   auto n_ptr = std::make_shared<int>(n);
 
   for (auto &ev : evs) {
-    ev->add_callback([all_of_ev, n_ptr](event_ptr) {
+    ev->add_callback([all_of_ev, n_ptr](auto) {
       --*n_ptr;
       if (*n_ptr == 0) {
         all_of_ev->trigger();
@@ -76,14 +78,15 @@ simtime simulation::now() { return now_; }
 
 bool simulation::empty() { return scheduled_evs.empty(); }
 
-void simulation::schedule(simtime delay, event_ptr ev) {
+void simulation::schedule(simtime delay, std::shared_ptr<simcpp20::event> ev) {
   scheduled_evs.emplace(now() + delay, next_id_, ev);
   next_id_++;
 }
 
 // scheduled_event
 
-scheduled_event::scheduled_event(simtime time, id_type id, event_ptr ev)
+scheduled_event::scheduled_event(simtime time, id_type id,
+                                 std::shared_ptr<event> ev)
     : time_(time), id_(id), ev_(ev) {}
 
 bool scheduled_event::operator>(const scheduled_event &other) const {
@@ -96,7 +99,7 @@ bool scheduled_event::operator>(const scheduled_event &other) const {
 
 simtime scheduled_event::time() const { return time_; }
 
-event_ptr scheduled_event::ev() { return ev_; }
+std::shared_ptr<event> scheduled_event::ev() { return ev_; }
 
 // event
 
@@ -125,7 +128,7 @@ void event::trigger_delayed(simtime delay) {
   sim.schedule(delay, shared_from_this());
 }
 
-void event::add_callback(std::function<void(event_ptr)> cb) {
+void event::add_callback(std::function<void(std::shared_ptr<event>)> cb) {
   if (processed()) {
     return;
   }
@@ -171,7 +174,7 @@ void event::add_handle(std::coroutine_handle<> h) {
 
 // await_event
 
-await_event::await_event(event_ptr ev) : ev(ev) {}
+await_event::await_event(std::shared_ptr<event> ev) : ev(ev) {}
 
 bool await_event::await_ready() { return ev->processed(); }
 
@@ -195,7 +198,9 @@ std::suspend_never process::promise_type::final_suspend() noexcept {
 
 void process::promise_type::unhandled_exception() {}
 
-await_event process::promise_type::await_transform(event_ptr ev) { return ev; }
+await_event process::promise_type::await_transform(std::shared_ptr<event> ev) {
+  return ev;
+}
 
 await_event process::promise_type::await_transform(process proc) {
   return proc.ev;
@@ -203,5 +208,5 @@ await_event process::promise_type::await_transform(process proc) {
 
 // process
 
-process::process(event_ptr ev) : ev(ev) {}
+process::process(std::shared_ptr<event> ev) : ev(ev) {}
 } // namespace simcpp20
