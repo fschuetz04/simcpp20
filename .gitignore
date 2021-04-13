@@ -4,5 +4,6 @@
 !*.md
 !.gitignore
 !CMakeLists.txt
+!examples
 !LICENSE
 !simcpp20
