@@ -89,8 +89,8 @@ public:
   void run();
 
   /**
-   * Run the simulation until the next scheduled event is scheduled after the
-   * given target time.
+   * Run the simulation until the next scheduled event is scheduled at or after
+   * the given target time.
    *
    * @param target Target time.
    */

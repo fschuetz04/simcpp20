@@ -46,6 +46,28 @@ fast 4
 fast 5
 ```
 
+This project uses CMake.
+To build and execute the example, run the following commands:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+.examples/clocks
+```
+
+Currently, the CMake files only support GCC with a minimum version of 10.
+If version 10 of GCC later is available under a different name (for example `g++-10`), you can try `CXX=g++10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
+If you do not want to use CMake, you can use the GCC directly:
+
+```shell
+g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/simcpp20.cpp examples/clocks.cpp -o example_clocks
+./example_clocks
+```
+
+Again, you can try using `g++-10` instead.
+
 ## Copyright and License
 
 Copyright © 2021 Felix Schütz.
