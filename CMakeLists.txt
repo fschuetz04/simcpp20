@@ -7,7 +7,4 @@ if(NOT (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERS
 endif()
 
 add_subdirectory(simcpp20)
-target_include_directories(simcpp20 PUBLIC "${PROJECT_SOURCE_DIR}/simcpp20")
-target_compile_options(simcpp20 PUBLIC -std=c++20 -fcoroutines)
-
 add_subdirectory(examples)
