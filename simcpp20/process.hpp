@@ -25,7 +25,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation &sim, Args &&...)
-        : sim(sim), proc_ev(sim.event()) {}
+        : sim{sim}, proc_ev{sim.event()} {}
 
     /**
      * @return process instance containing an event which will be triggered when
@@ -58,6 +58,10 @@ public:
     event proc_ev;
   };
 
+  /**
+   * @return Underlying event of the process which is triggered when it
+   * finishes.
+   */
   event operator co_await();
 
 private:

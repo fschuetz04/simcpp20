@@ -5,7 +5,7 @@
 
 namespace simcpp20 {
 scheduled_event::scheduled_event(simtime time, id_type id, event ev)
-    : time_(time), id(id), ev_(ev) {}
+    : time_{time}, id{id}, ev_{ev} {}
 
 bool scheduled_event::operator>(const scheduled_event &other) const {
   if (time() != other.time()) {

@@ -8,7 +8,7 @@
 namespace simcpp20 {
 // event
 
-event::event(simulation &sim) : shared(std::make_shared<shared_state>(sim)) {}
+event::event(simulation &sim) : shared{std::make_shared<shared_state>(sim)} {}
 
 void event::trigger() {
   if (!pending()) {

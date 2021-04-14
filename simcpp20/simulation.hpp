@@ -53,6 +53,8 @@ public:
    * If any of the given events is already processed or the list of given events
    * is empty, the created event is immediately triggered.
    *
+   * TODO(fschuetz04): Implement any_of for list of processes.
+   *
    * @param evs List of events.
    * @return Created event.
    */
@@ -64,6 +66,8 @@ public:
    *
    * If all of the given events are already processed or the list of given
    * events if empty, the created event is immediately triggered.
+   *
+   * TODO(fschuetz04): Implement all_of for list of processes.
    *
    * @param evs List of events.
    * @return Created event.
@@ -103,7 +107,7 @@ private:
   /// Event queue.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
                       std::greater<scheduled_event>>
-      scheduled_evs = {};
+      scheduled_evs{};
 
   /// Next ID for scheduling an event.
   id_type next_id = 0;
