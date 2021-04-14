@@ -2,6 +2,7 @@
 !*.cpp
 !*.hpp
 !*.md
+!.clang-format
 !.gitignore
 !CMakeLists.txt
 !examples
