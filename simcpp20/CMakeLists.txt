@@ -1,5 +1,4 @@
 add_library(simcpp20
-    await_event.cpp
     event.cpp
     process.cpp
     scheduled_event.cpp

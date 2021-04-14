@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <queue>
 #include <vector>
 
@@ -42,7 +43,7 @@ public:
    * @return Created event.
    */
   template <std::derived_from<simcpp20::event> T = simcpp20::event> T event() {
-    return *this;
+    return simcpp20::event{*this};
   }
 
   /**
@@ -105,7 +106,7 @@ private:
       scheduled_evs = {};
 
   /// ID of the next scheduled event.
-  id_type next_id_ = 0;
+  id_type next_id = 0;
 
   /**
    * Schedule the given event to be processed after the given delay.

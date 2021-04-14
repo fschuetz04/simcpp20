@@ -48,6 +48,21 @@ bool event::processed() {
   return shared->state == event_state::processed;
 }
 
+bool event::await_ready() {
+  return processed();
+}
+
+void event::await_suspend(std::coroutine_handle<> handle) {
+  // TODO(fschuetz04): (how to) decrease ref count of shared?
+  if (processed()) {
+    return;
+  }
+
+  shared->handles.emplace_back(handle);
+}
+
+void event::await_resume() {}
+
 void event::process() {
   if (processed()) {
     return;
@@ -58,22 +73,12 @@ void event::process() {
   for (auto &handle : shared->handles) {
     handle.resume();
   }
-
   shared->handles.clear();
 
   for (auto &cb : shared->cbs) {
     cb(*this);
   }
-
   shared->cbs.clear();
-}
-
-void event::add_handle(std::coroutine_handle<> handle) {
-  if (processed()) {
-    return;
-  }
-
-  shared->handles.emplace_back(handle);
 }
 
 // event::shared_state

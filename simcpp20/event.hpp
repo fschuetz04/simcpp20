@@ -6,6 +6,7 @@
 #include <coroutine>
 #include <functional>
 #include <memory>
+#include <vector>
 
 #include "types.hpp"
 
@@ -39,7 +40,7 @@ public:
    * @param simulation Reference to simulation instance. Required for scheduling
    * the event.
    */
-  event(simulation &sim);
+  explicit event(simulation &sim);
 
   /**
    * Schedule the event to be processed immediately.
@@ -75,12 +76,28 @@ public:
   /// @return Whether the event is processed.
   bool processed();
 
+  /**
+   * @return Whether the event is already processed and a waiting coroutine must
+   * not be paused.
+   */
+  bool await_ready();
+
+  /**
+   * Resume a waiting coroutine when the event is processed.
+   *
+   * @param handle Handle of the waiting coroutine.
+   */
+  void await_suspend(std::coroutine_handle<> handle);
+
+  /// No-op.
+  void await_resume();
+
 private:
   /// Shared state of the event.
   class shared_state {
   public:
     /// Construct a new shared state.
-    shared_state(simulation &sim);
+    explicit shared_state(simulation &sim);
 
     /// Destroy all processes waiting for the event if it has no been processed.
     ~shared_state();
@@ -100,19 +117,6 @@ private:
 
   /// Shared state of the event.
   std::shared_ptr<shared_state> shared;
-
-  /**
-   * Add a coroutine handle to the event.
-   *
-   * The coroutine will be resumed when the event is processed. If the event is
-   * already processed, the handle is not stored, as the coroutine will never
-   * be resumed.
-   *
-   * @param handle Handle of the coroutine to resume when the event is
-   * processed.
-   */
-  void add_handle(std::coroutine_handle<> handle);
-
   /**
    * Process the event.
    *
@@ -123,8 +127,5 @@ private:
 
   // simulation needs access to event::process
   friend class simulation;
-
-  // await_event needs access to event::add_handle
-  friend class await_event;
 };
 } // namespace simcpp20

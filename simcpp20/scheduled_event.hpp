@@ -44,7 +44,7 @@ private:
    * Incremental ID to sort events scheduled at the same time by insertion
    * order.
    */
-  id_type id_;
+  id_type id;
 
   /// Event to process.
   event ev_;

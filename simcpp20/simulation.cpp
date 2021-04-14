@@ -3,6 +3,8 @@
 
 #include "simulation.hpp"
 
+#include <memory>
+
 namespace simcpp20 {
 simcpp20::event simulation::any_of(std::vector<simcpp20::event> evs) {
   for (auto &ev : evs) {
@@ -78,7 +80,7 @@ bool simulation::empty() {
 }
 
 void simulation::schedule(simtime delay, simcpp20::event ev) {
-  scheduled_evs.emplace(now() + delay, next_id_, ev);
-  next_id_++;
+  scheduled_evs.emplace(now() + delay, next_id, ev);
+  next_id++;
 }
 } // namespace simcpp20

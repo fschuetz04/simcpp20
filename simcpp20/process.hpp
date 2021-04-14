@@ -8,7 +8,6 @@
 #include "simulation.hpp"
 
 namespace simcpp20 {
-class await_event;
 class event;
 
 /// Used to simulate an actor.
@@ -25,7 +24,7 @@ public:
      * @param sim Reference to the simulation.
      */
     template <typename... Args>
-    promise_type(simulation &sim, Args &&...)
+    explicit promise_type(simulation &sim, Args &&...)
         : sim(sim), proc_ev(sim.event()) {}
 
     /**
@@ -35,14 +34,11 @@ public:
     process get_return_object();
 
     /**
-     * Register the process to be started immediately.
+     * Register the process to be started immediately via an initial event.
      *
-     * Create an event, which is scheduled to be processed immediately. When
-     * this event is processed, the process is started.
-     *
-     * @return Awaitable for the initial event.
+     * @return Initial event.
      */
-    await_event initial_suspend();
+    event initial_suspend();
 
     /**
      * Trigger the underlying event since the process finished.
@@ -51,29 +47,8 @@ public:
      */
     std::suspend_never final_suspend() noexcept;
 
-    /// Does nothing.
+    /// No-op.
     void unhandled_exception();
-
-    /**
-     * Transform the given event to an await_event awaitable.
-     *
-     * Called when using co_await on an event.
-     *
-     * @param ev Event to wait for.
-     * @return Awaitable for the given event.
-     */
-    await_event await_transform(event ev);
-
-    /**
-     * Transform the given process to an await_event awaitable.
-     *
-     * Called when using co_await on a process.
-     *
-     * @param proc Process to wait for.
-     * @return Awaitable for the underlying event of the process, which is
-     * triggered when the process finishes.
-     */
-    await_event await_transform(process proc);
 
   private:
     /// Refernece to the simulation.
@@ -92,6 +67,6 @@ private:
    *
    * @param ev Underlying event which is triggered when the process finishes.
    */
-  process(event ev);
+  explicit process(event ev);
 };
 } // namespace simcpp20

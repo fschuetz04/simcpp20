@@ -3,16 +3,14 @@
 
 #include "process.hpp"
 
-#include "await_event.hpp"
-
 namespace simcpp20 {
 // process::promise_type
 
 process process::promise_type::get_return_object() {
-  return proc_ev;
+  return process{proc_ev};
 }
 
-await_event process::promise_type::initial_suspend() {
+event process::promise_type::initial_suspend() {
   return sim.timeout(0);
 }
 
@@ -22,14 +20,6 @@ std::suspend_never process::promise_type::final_suspend() noexcept {
 }
 
 void process::promise_type::unhandled_exception() {}
-
-await_event process::promise_type::await_transform(event ev) {
-  return ev;
-}
-
-await_event process::promise_type::await_transform(process proc) {
-  return proc.ev;
-}
 
 // process
 
