@@ -2,6 +2,9 @@
 !*.cpp
 !*.hpp
 !*.md
+!.clang-format
 !.gitignore
-!Makefile
+!CMakeLists.txt
+!examples
 !LICENSE
+!simcpp20

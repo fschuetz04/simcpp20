@@ -26,17 +26,17 @@ simcpp20::process clock_proc(simcpp20::simulation &sim, std::string name,
 
 int main() {
   simcpp20::simulation sim;
-  clock_proc(sim, "fast", 1);
   clock_proc(sim, "slow", 2);
+  clock_proc(sim, "fast", 1);
   sim.run_until(5);
 }
 ```
 
 When run, the following output is generated:
 
-```
-fast 0
+```text
 slow 0
+fast 0
 fast 1
 slow 2
 fast 2
@@ -45,6 +45,28 @@ slow 4
 fast 4
 fast 5
 ```
+
+This project uses CMake.
+To build and execute the example, run the following commands:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+.examples/clocks
+```
+
+Currently, the CMake files only support GCC with a minimum version of 10.
+If version 10 of GCC later is available under a different name (for example `g++-10`), you can try `CXX=g++10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
+If you do not want to use CMake, you can use the GCC directly:
+
+```shell
+g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/*.cpp examples/clocks.cpp -o example_clocks
+./example_clocks
+```
+
+Again, you can try using `g++-10` instead.
 
 ## Copyright and License
 
