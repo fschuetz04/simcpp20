@@ -11,7 +11,7 @@ namespace simcpp20 {
 event::event(simulation &sim) : shared(std::make_shared<shared_state>(sim)) {}
 
 void event::trigger() {
-  if (triggered()) {
+  if (!pending()) {
     return;
   }
 
@@ -20,7 +20,7 @@ void event::trigger() {
 }
 
 void event::trigger_delayed(simtime delay) {
-  if (triggered()) {
+  if (!pending()) {
     return;
   }
 
@@ -28,6 +28,10 @@ void event::trigger_delayed(simtime delay) {
 }
 
 void event::abort() {
+  if (!pending) {
+    return;
+  }
+
   shared->state = event_state::aborted;
 
   for (auto &handle : shared->handles) {
@@ -39,7 +43,7 @@ void event::abort() {
 }
 
 void event::add_callback(std::function<void(event &)> cb) {
-  if (processed()) {
+  if (processed() || aborted()) {
     return;
   }
 
@@ -75,7 +79,7 @@ void event::await_suspend(std::coroutine_handle<> handle) {
 void event::await_resume() {}
 
 void event::process() {
-  if (processed()) {
+  if (processed() || aborted()) {
     return;
   }
 
