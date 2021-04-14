@@ -7,11 +7,7 @@
 #include "types.hpp"
 
 namespace simcpp20 {
-/**
- * One event in the event queue of simulation.
- *
- * TODO(fschuetz04): Replace with std::tuple?
- */
+/// One event in the event queue of simulation.
 class scheduled_event {
 public:
   /**
