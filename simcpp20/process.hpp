@@ -58,6 +58,8 @@ public:
     event proc_ev;
   };
 
+  event operator co_await();
+
 private:
   /// Underlying event which is triggered when the process finishes.
   event ev;

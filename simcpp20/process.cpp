@@ -24,4 +24,8 @@ void process::promise_type::unhandled_exception() {}
 // process
 
 process::process(event ev) : ev(ev) {}
+
+event process::operator co_await() {
+  return ev;
+}
 } // namespace simcpp20
