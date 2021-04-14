@@ -28,7 +28,10 @@ enum class event_state {
   triggered,
 
   /// Event is currently being processed or has been processed.
-  processed
+  processed,
+
+  /// Event has been aborted.
+  aborted,
 };
 
 /// Can be awaited by processes
@@ -43,24 +46,27 @@ public:
   explicit event(simulation &sim);
 
   /**
-   * Schedule the event to be processed immediately.
+   * Set the event state to triggered and schedule it to be processed
+   * immediately.
    *
-   * Set the event state to triggered.
+   * If the event is not pending, nothing is done.
    */
   void trigger();
 
   /**
    * Schedule the event to be processed after the given delay.
    *
+   * If the event is not pending, nothing is done.
+   *
    * @param delay Delay after which to process the event.
    */
   void trigger_delayed(simtime delay);
 
+  /// Set the event state to aborted.
+  void abort();
+
   /**
-   * Add a callback to the event.
-   *
-   * The callback will be called when the event is processed. If the event is
-   * already processed, the callback is not stored, as it will never be called.
+   * Add a callback to the event to be called when the event is processed.
    *
    * @param cb Callback to add to the event. The callback receives the event,
    * so one function can differentiate between multiple events.
@@ -75,6 +81,9 @@ public:
 
   /// @return Whether the event is processed.
   bool processed();
+
+  /// @return Whether the event is aborted.
+  bool aborted();
 
   /**
    * @return Whether the event is already processed and a waiting coroutine must

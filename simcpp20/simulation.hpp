@@ -105,7 +105,7 @@ private:
                       std::greater<scheduled_event>>
       scheduled_evs = {};
 
-  /// ID of the next scheduled event.
+  /// Next ID for scheduling an event.
   id_type next_id = 0;
 
   /**

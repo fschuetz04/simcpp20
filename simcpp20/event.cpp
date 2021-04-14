@@ -27,6 +27,17 @@ void event::trigger_delayed(simtime delay) {
   shared->sim.schedule(delay, *this);
 }
 
+void event::abort() {
+  shared->state = event_state::aborted;
+
+  for (auto &handle : shared->handles) {
+    handle.destroy();
+  }
+  shared->handles.clear();
+
+  shared->cbs.clear();
+}
+
 void event::add_callback(std::function<void(event &)> cb) {
   if (processed()) {
     return;
@@ -48,15 +59,15 @@ bool event::processed() {
   return shared->state == event_state::processed;
 }
 
+bool event::aborted() {
+  return shared->state == event_state::aborted;
+}
+
 bool event::await_ready() {
   return processed();
 }
 
 void event::await_suspend(std::coroutine_handle<> handle) {
-  if (processed()) {
-    return;
-  }
-
   shared->handles.emplace_back(handle);
   shared = nullptr;
 }
