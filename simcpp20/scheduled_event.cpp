@@ -19,7 +19,7 @@ simtime scheduled_event::time() const {
   return time_;
 }
 
-event scheduled_event::ev() const {
+event scheduled_event::ev() {
   return ev_;
 }
 } // namespace simcpp20

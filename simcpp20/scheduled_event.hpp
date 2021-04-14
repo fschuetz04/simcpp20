@@ -24,10 +24,6 @@ public:
    */
   scheduled_event(simtime time, id_type id, event ev);
 
-  /// Copy constructor.
-  scheduled_event(const scheduled_event &other)
-      : scheduled_event(other.time(), other.id_, other.ev()) {}
-
   /**
    * @param other Scheduled event to compare to.
    * @return Whether this event is scheduled before the given event.
@@ -38,7 +34,7 @@ public:
   simtime time() const;
 
   /// @return Event to process.
-  event ev() const;
+  event ev();
 
 private:
   /// Time at which to process the event.
