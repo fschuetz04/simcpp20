@@ -4,8 +4,7 @@
 #include "scheduled_event.hpp"
 
 namespace simcpp20 {
-scheduled_event::scheduled_event(simtime time, id_type id,
-                                 std::shared_ptr<event> ev)
+scheduled_event::scheduled_event(simtime time, id_type id, event ev)
     : time_(time), id_(id), ev_(ev) {}
 
 bool scheduled_event::operator>(const scheduled_event &other) const {
@@ -16,7 +15,11 @@ bool scheduled_event::operator>(const scheduled_event &other) const {
   return id_ > other.id_;
 }
 
-simtime scheduled_event::time() const { return time_; }
+simtime scheduled_event::time() const {
+  return time_;
+}
 
-std::shared_ptr<event> scheduled_event::ev() { return ev_; }
+event scheduled_event::ev() const {
+  return ev_;
+}
 } // namespace simcpp20

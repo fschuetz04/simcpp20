@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "await_event.hpp"
 #include "event.hpp"
 #include "process.hpp"
 #include "simulation.hpp"

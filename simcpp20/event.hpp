@@ -7,15 +7,31 @@
 #include <functional>
 #include <memory>
 
-#include "event_state.hpp"
-#include "simulation.hpp"
 #include "types.hpp"
 
 namespace simcpp20 {
 class simulation;
 
+/// State of an event.
+enum class event_state {
+  /**
+   * Event has not yet been triggered or processed. This is the initial state of
+   * a new event.
+   */
+  pending,
+
+  /**
+   * Event has been triggered and will be processed at the current simulation
+   * time.
+   */
+  triggered,
+
+  /// Event is currently being processed or has been processed.
+  processed
+};
+
 /// Can be awaited by processes
-class event : public std::enable_shared_from_this<event> {
+class event {
 public:
   /**
    * Construct a new pending event.
@@ -24,9 +40,6 @@ public:
    * the event.
    */
   event(simulation &sim);
-
-  /// Destroy the event and all processes waiting for it.
-  ~event();
 
   /**
    * Schedule the event to be processed immediately.
@@ -51,7 +64,7 @@ public:
    * @param cb Callback to add to the event. The callback receives the event,
    * so one function can differentiate between multiple events.
    */
-  void add_callback(std::function<void(std::shared_ptr<event>)> cb);
+  void add_callback(std::function<void(event &)> cb);
 
   /// @return Whether the event is pending.
   bool pending();
@@ -63,17 +76,30 @@ public:
   bool processed();
 
 private:
-  /// Coroutine handles of processes waiting for this event.
-  std::vector<std::coroutine_handle<>> handles = {};
+  /// Shared state of the event.
+  class shared_state {
+  public:
+    /// Construct a new shared state.
+    shared_state(simulation &sim);
 
-  /// Callbacks for this event.
-  std::vector<std::function<void(std::shared_ptr<event>)>> cbs = {};
+    /// Destroy all processes waiting for the event if it has no been processed.
+    ~shared_state();
 
-  /// State of the event.
-  event_state state = event_state::pending;
+    /// Coroutine handles of processes waiting for this event.
+    std::vector<std::coroutine_handle<>> handles{};
 
-  /// Reference to the simulation.
-  simulation &sim;
+    /// Callbacks for this event.
+    std::vector<std::function<void(event &)>> cbs{};
+
+    /// State of the event.
+    event_state state = event_state::pending;
+
+    /// Reference to the simulation.
+    simulation &sim;
+  };
+
+  /// Shared state of the event.
+  std::shared_ptr<shared_state> shared;
 
   /**
    * Add a coroutine handle to the event.

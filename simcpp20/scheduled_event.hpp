@@ -3,15 +3,15 @@
 
 #pragma once
 
-#include <memory>
-
 #include "event.hpp"
 #include "types.hpp"
 
 namespace simcpp20 {
-class event;
-
-/// One event in the event queue of simulation.
+/**
+ * One event in the event queue of simulation.
+ *
+ * TODO(fschuetz04): Replace with std::tuple?
+ */
 class scheduled_event {
 public:
   /**
@@ -22,7 +22,11 @@ public:
    * insertion order.
    * @param ev Event to process.
    */
-  scheduled_event(simtime time, id_type id, std::shared_ptr<event> ev);
+  scheduled_event(simtime time, id_type id, event ev);
+
+  /// Copy constructor.
+  scheduled_event(const scheduled_event &other)
+      : scheduled_event(other.time(), other.id_, other.ev()) {}
 
   /**
    * @param other Scheduled event to compare to.
@@ -34,7 +38,7 @@ public:
   simtime time() const;
 
   /// @return Event to process.
-  std::shared_ptr<event> ev();
+  event ev() const;
 
 private:
   /// Time at which to process the event.
@@ -47,6 +51,6 @@ private:
   id_type id_;
 
   /// Event to process.
-  std::shared_ptr<event> ev_;
+  event ev_;
 };
 } // namespace simcpp20

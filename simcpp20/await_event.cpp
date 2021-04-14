@@ -4,13 +4,15 @@
 #include "await_event.hpp"
 
 namespace simcpp20 {
-await_event::await_event(std::shared_ptr<event> ev) : ev(ev) {}
+await_event::await_event(event ev) : ev(ev) {}
 
-bool await_event::await_ready() { return ev->processed(); }
+bool await_event::await_ready() {
+  return ev.processed();
+}
 
 void await_event::await_suspend(std::coroutine_handle<> handle) {
-  ev->add_handle(handle);
-  ev = nullptr;
+  // TODO(fschuetz04): how to decrease ref count of ev::shared?
+  ev.add_handle(handle);
 }
 
 void await_event::await_resume() {}

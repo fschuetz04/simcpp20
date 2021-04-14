@@ -3,16 +3,14 @@
 
 #pragma once
 
-#include <memory>
 #include <queue>
+#include <vector>
 
-#include "event.hpp"
 #include "scheduled_event.hpp"
 #include "types.hpp"
 
 namespace simcpp20 {
 class event;
-class scheduled_event;
 
 /**
  * Used to run a discrete-event simulation.
@@ -31,7 +29,7 @@ public:
    * @return Created event.
    */
   template <std::derived_from<simcpp20::event> T = simcpp20::event>
-  std::shared_ptr<T> timeout(simtime delay) {
+  T timeout(simtime delay) {
     auto ev = event<T>();
     schedule(delay, ev);
     return ev;
@@ -43,9 +41,8 @@ public:
    * @tparam T Event class. Must be a subclass of simcpp20::event.
    * @return Created event.
    */
-  template <std::derived_from<simcpp20::event> T = simcpp20::event>
-  std::shared_ptr<T> event() {
-    return std::make_shared<T>(*this);
+  template <std::derived_from<simcpp20::event> T = simcpp20::event> T event() {
+    return *this;
   }
 
   /**
@@ -58,8 +55,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  std::shared_ptr<simcpp20::event>
-  any_of(std::initializer_list<std::shared_ptr<simcpp20::event>> evs);
+  simcpp20::event any_of(std::vector<simcpp20::event> evs);
 
   /**
    * Create a pending event which is triggered when all of the given events are
@@ -71,8 +67,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  std::shared_ptr<simcpp20::event>
-  all_of(std::initializer_list<std::shared_ptr<simcpp20::event>> evs);
+  simcpp20::event all_of(std::vector<simcpp20::event> evs);
 
   /**
    * Extract the next scheduled event from the event queue and process it.
@@ -118,7 +113,7 @@ private:
    * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
    */
-  void schedule(simtime delay, std::shared_ptr<simcpp20::event> ev);
+  void schedule(simtime delay, simcpp20::event ev);
 
   // event needs access to simulation::schedule
   friend class event;

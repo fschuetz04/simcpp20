@@ -4,7 +4,6 @@
 #pragma once
 
 #include <coroutine>
-#include <memory>
 
 #include "event.hpp"
 
@@ -21,7 +20,7 @@ public:
    *
    * @param ev Event to wait for.
    */
-  await_event(std::shared_ptr<event> ev);
+  await_event(event ev);
 
   /**
    * @return Whether the event is already processed and the coroutine must
@@ -42,6 +41,6 @@ public:
 
 private:
   /// Event to wait for.
-  std::shared_ptr<event> ev;
+  event ev;
 };
 } // namespace simcpp20

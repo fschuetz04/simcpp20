@@ -4,13 +4,13 @@
 #pragma once
 
 #include <coroutine>
-#include <memory>
 
-#include "await_event.hpp"
-#include "event.hpp"
 #include "simulation.hpp"
 
 namespace simcpp20 {
+class await_event;
+class event;
+
 /// Used to simulate an actor.
 class process {
 public:
@@ -62,7 +62,7 @@ public:
      * @param ev Event to wait for.
      * @return Awaitable for the given event.
      */
-    await_event await_transform(std::shared_ptr<event> ev);
+    await_event await_transform(event ev);
 
     /**
      * Transform the given process to an await_event awaitable.
@@ -80,18 +80,18 @@ public:
     simulation &sim;
 
     /// Underlying event which is triggered when the process finishes.
-    std::shared_ptr<event> proc_ev;
+    event proc_ev;
   };
 
 private:
   /// Underlying event which is triggered when the process finishes.
-  std::shared_ptr<event> ev;
+  event ev;
 
   /**
    * Construct a new process object
    *
    * @param ev Underlying event which is triggered when the process finishes.
    */
-  process(std::shared_ptr<event> ev);
+  process(event ev);
 };
 } // namespace simcpp20

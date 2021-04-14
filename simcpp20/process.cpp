@@ -3,21 +3,27 @@
 
 #include "process.hpp"
 
+#include "await_event.hpp"
+
 namespace simcpp20 {
 // process::promise_type
 
-process process::promise_type::get_return_object() { return proc_ev; }
+process process::promise_type::get_return_object() {
+  return proc_ev;
+}
 
-await_event process::promise_type::initial_suspend() { return sim.timeout(0); }
+await_event process::promise_type::initial_suspend() {
+  return sim.timeout(0);
+}
 
 std::suspend_never process::promise_type::final_suspend() noexcept {
-  proc_ev->trigger();
+  proc_ev.trigger();
   return {};
 }
 
 void process::promise_type::unhandled_exception() {}
 
-await_event process::promise_type::await_transform(std::shared_ptr<event> ev) {
+await_event process::promise_type::await_transform(event ev) {
   return ev;
 }
 
@@ -27,5 +33,5 @@ await_event process::promise_type::await_transform(process proc) {
 
 // process
 
-process::process(std::shared_ptr<event> ev) : ev(ev) {}
+process::process(event ev) : ev(ev) {}
 } // namespace simcpp20

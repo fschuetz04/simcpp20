@@ -3,22 +3,20 @@
 
 #include "event.hpp"
 
-namespace simcpp20 {
-event::event(simulation &sim) : sim(sim) {}
+#include "simulation.hpp"
 
-event::~event() {
-  for (auto &handle : handles) {
-    handle.destroy();
-  }
-}
+namespace simcpp20 {
+// event
+
+event::event(simulation &sim) : shared(std::make_shared<shared_state>(sim)) {}
 
 void event::trigger() {
   if (triggered()) {
     return;
   }
 
-  state = event_state::triggered;
-  sim.schedule(0, shared_from_this());
+  shared->state = event_state::triggered;
+  shared->sim.schedule(0, *this);
 }
 
 void event::trigger_delayed(simtime delay) {
@@ -26,50 +24,65 @@ void event::trigger_delayed(simtime delay) {
     return;
   }
 
-  sim.schedule(delay, shared_from_this());
+  shared->sim.schedule(delay, *this);
 }
 
-void event::add_callback(std::function<void(std::shared_ptr<event>)> cb) {
+void event::add_callback(std::function<void(event &)> cb) {
   if (processed()) {
     return;
   }
 
-  cbs.emplace_back(cb);
+  shared->cbs.emplace_back(cb);
 }
 
-bool event::pending() { return state == event_state::pending; }
+bool event::pending() {
+  return shared->state == event_state::pending;
+}
 
 bool event::triggered() {
-  return state == event_state::triggered || state == event_state::processed;
+  return shared->state == event_state::triggered ||
+         shared->state == event_state::processed;
 }
 
-bool event::processed() { return state == event_state::processed; }
+bool event::processed() {
+  return shared->state == event_state::processed;
+}
 
 void event::process() {
   if (processed()) {
     return;
   }
 
-  state = event_state::processed;
+  shared->state = event_state::processed;
 
-  for (auto &handle : handles) {
+  for (auto &handle : shared->handles) {
     handle.resume();
   }
 
-  handles.clear();
+  shared->handles.clear();
 
-  for (auto &cb : cbs) {
-    cb(shared_from_this());
+  for (auto &cb : shared->cbs) {
+    cb(*this);
   }
 
-  cbs.clear();
+  shared->cbs.clear();
 }
 
-void event::add_handle(std::coroutine_handle<> h) {
+void event::add_handle(std::coroutine_handle<> handle) {
   if (processed()) {
     return;
   }
 
-  handles.emplace_back(h);
+  shared->handles.emplace_back(handle);
+}
+
+// event::shared_state
+
+event::shared_state::shared_state(simulation &sim) : sim(sim) {}
+
+event::shared_state::~shared_state() {
+  for (auto &handle : handles) {
+    handle.destroy();
+  }
 }
 } // namespace simcpp20
