@@ -6,9 +6,9 @@
 #include <coroutine>
 #include <memory>
 
-namespace simcpp20 {
-class event;
+#include "event.hpp"
 
+namespace simcpp20 {
 /**
  * Awaitable to wait for an event inside a coroutine.
  *

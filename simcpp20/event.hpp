@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "event_state.hpp"
+#include "simulation.hpp"
+#include "types.hpp"
 
 namespace simcpp20 {
 class simulation;
-
-using simtime = double;
 
 /// Can be awaited by processes
 class event : public std::enable_shared_from_this<event> {

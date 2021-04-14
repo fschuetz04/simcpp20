@@ -6,12 +6,13 @@
 #include <memory>
 #include <queue>
 
+#include "event.hpp"
+#include "scheduled_event.hpp"
+#include "types.hpp"
+
 namespace simcpp20 {
 class event;
 class scheduled_event;
-
-using id_type = uint64_t;
-using simtime = double;
 
 /**
  * Used to run a discrete-event simulation.

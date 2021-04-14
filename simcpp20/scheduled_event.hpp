@@ -5,11 +5,11 @@
 
 #include <memory>
 
+#include "event.hpp"
+#include "types.hpp"
+
 namespace simcpp20 {
 class event;
-
-using id_type = uint64_t;
-using simtime = double;
 
 /// One event in the event queue of simulation.
 class scheduled_event {

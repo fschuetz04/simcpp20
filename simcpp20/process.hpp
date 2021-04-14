@@ -6,12 +6,11 @@
 #include <coroutine>
 #include <memory>
 
+#include "await_event.hpp"
+#include "event.hpp"
 #include "simulation.hpp"
 
 namespace simcpp20 {
-class await_event;
-class event;
-
 /// Used to simulate an actor.
 class process {
 public:
