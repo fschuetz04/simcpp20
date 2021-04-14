@@ -32,7 +32,7 @@ public:
   template <std::derived_from<simcpp20::event> T = simcpp20::event>
   std::shared_ptr<T> timeout(simtime delay) {
     auto ev = event<T>();
-    ev->trigger_delayed(delay);
+    schedule(delay, ev);
     return ev;
   }
 
