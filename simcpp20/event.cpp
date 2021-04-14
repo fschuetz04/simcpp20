@@ -28,7 +28,7 @@ void event::trigger_delayed(simtime delay) {
 }
 
 void event::abort() {
-  if (!pending) {
+  if (!pending()) {
     return;
   }
 
