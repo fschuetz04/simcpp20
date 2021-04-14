@@ -53,12 +53,12 @@ bool event::await_ready() {
 }
 
 void event::await_suspend(std::coroutine_handle<> handle) {
-  // TODO(fschuetz04): (how to) decrease ref count of shared?
   if (processed()) {
     return;
   }
 
   shared->handles.emplace_back(handle);
+  shared = nullptr;
 }
 
 void event::await_resume() {}
