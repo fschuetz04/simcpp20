@@ -5,10 +5,10 @@
 
 #include "simcpp20.hpp"
 
-simcpp20::event clock_proc(simcpp20::simulation &sim, std::string name,
+simcpp20::event clock_proc(simcpp20::simulation &sim, char const *name,
                            double delay) {
   while (true) {
-    std::cout << name << " " << sim.now() << std::endl;
+    printf("[%.0f] %s\n", sim.now(), name);
     co_await sim.timeout(delay);
   }
 }

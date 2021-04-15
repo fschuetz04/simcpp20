@@ -15,10 +15,10 @@ A short example simulating two clocks ticking in different time intervals looks 
 
 #include "simcpp20.hpp"
 
-simcpp20::event clock_proc(simcpp20::simulation &sim, std::string name,
+simcpp20::event clock_proc(simcpp20::simulation &sim, char const *name,
                            double delay) {
   while (true) {
-    std::cout << name << " " << sim.now() << std::endl;
+    printf("[%.0f] %s\n", sim.now(), name);
     co_await sim.timeout(delay);
   }
 }
@@ -29,19 +29,20 @@ int main() {
   clock_proc(sim, "fast", 1);
   sim.run_until(5);
 }
+
 ```
 
 When run, the following output is generated:
 
 ```text
-slow 0
-fast 0
-fast 1
-slow 2
-fast 2
-fast 3
-slow 4
-fast 4
+[0] slow
+[0] fast
+[1] fast
+[2] slow
+[2] fast
+[3] fast
+[4] slow
+[4] fast
 ```
 
 This project uses CMake.
@@ -66,9 +67,11 @@ g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/*.cpp examples/clocks.cpp -o exa
 
 Again, you can try using `g++-10` instead.
 
+More examples can be found in the `examples/` folder.
+
 ## Copyright and License
 
 Copyright © 2021 Felix Schütz.
 
 Licensed under the MIT License.
-See the LICENSE file for details.
+See the `LICENSE` file for details.
