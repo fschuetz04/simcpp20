@@ -64,6 +64,10 @@ void simulation::run() {
 }
 
 void simulation::run_until(simtime target) {
+  if (target < now()) {
+    return;
+  }
+
   while (!empty() && scheduled_evs.top().time() < target) {
     step();
   }
