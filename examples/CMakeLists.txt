@@ -1,6 +1,8 @@
 set(Targets
-    clocks
-    bank)
+    bank
+    carwash
+    clocks)
+
 foreach(Target ${Targets})
     add_executable(${Target} ${Target}.cpp)
     target_link_libraries(${Target} PRIVATE simcpp20)
