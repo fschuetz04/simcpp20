@@ -35,7 +35,7 @@ simcpp20::event car(simcpp20::simulation &sim, config &conf, int id) {
 }
 
 simcpp20::event car_source(simcpp20::simulation &sim, config &conf) {
-  for (int id;; ++id) {
+  for (int id = 1;; ++id) {
     if (id > conf.initial_cars) {
       co_await sim.timeout(conf.arrival_time_dist(conf.gen));
     }

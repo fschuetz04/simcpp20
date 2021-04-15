@@ -6,8 +6,6 @@
 #include "simulation.hpp"
 
 namespace simcpp20 {
-// event
-
 event::event(simulation &sim) : shared{std::make_shared<shared_state>(sim)} {}
 
 void event::trigger() {
@@ -72,7 +70,7 @@ bool event::await_ready() {
 }
 
 void event::await_suspend(std::coroutine_handle<> handle) {
-  shared->handles.emplace_back(handle);
+  shared->handles.push_back(handle);
   shared = nullptr;
 }
 
@@ -95,12 +93,4 @@ void event::process() {
   }
   shared->cbs.clear();
 }
-
-// event::shared_state
-
-
-
-// promise_type
-
-
 } // namespace simcpp20
