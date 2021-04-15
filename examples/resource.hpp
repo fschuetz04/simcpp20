@@ -8,8 +8,8 @@
 
 class resource {
 public:
-  resource(simcpp20::simulation &sim, uint64_t capacity)
-      : sim{sim}, cap{capacity} {}
+  resource(simcpp20::simulation &sim, uint64_t available)
+      : sim{sim}, available_{available} {}
 
   simcpp20::event request() {
     auto ev = sim.event();
@@ -19,17 +19,19 @@ public:
   }
 
   void release() {
-    ++cap;
+    ++available_;
     trigger_evs();
   }
+
+  uint64_t available() { return available_; }
 
 private:
   std::queue<simcpp20::event> evs{};
   simcpp20::simulation &sim;
-  uint64_t cap;
+  uint64_t available_;
 
   void trigger_evs() {
-    while (cap > 0 && evs.size() > 0) {
+    while (available() > 0 && evs.size() > 0) {
       auto ev = evs.front();
       evs.pop();
       if (ev.aborted()) {
@@ -37,7 +39,7 @@ private:
       }
 
       ev.trigger();
-      --cap;
+      --available_;
     }
   }
 };
