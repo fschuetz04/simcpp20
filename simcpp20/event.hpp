@@ -12,12 +12,11 @@
 
 namespace simcpp20 {
 class simulation;
-class promise_type;
 
 /// Can be awaited by processes
 class event {
 public:
-  using promise_type = simcpp20::promise_type;
+  class promise_type;
 
   /**
    * Construct a new pending event.
@@ -142,7 +141,7 @@ private:
 };
 
 /// Promise type for process coroutines.
-class promise_type {
+class event::promise_type {
 public:
   /**
    * Construct a new promise_type.
