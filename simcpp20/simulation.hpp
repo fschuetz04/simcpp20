@@ -7,12 +7,11 @@
 #include <queue>
 #include <vector>
 
+#include "event.hpp"
 #include "scheduled_event.hpp"
 #include "types.hpp"
 
 namespace simcpp20 {
-class event;
-
 /**
  * Used to run a discrete-event simulation.
  *

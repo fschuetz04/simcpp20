@@ -98,11 +98,9 @@ void event::process() {
 
 // event::shared_state
 
-event::shared_state::shared_state(simulation &sim) : sim(sim) {}
 
-event::shared_state::~shared_state() {
-  for (auto &handle : handles) {
-    handle.destroy();
-  }
-}
+
+// promise_type
+
+
 } // namespace simcpp20

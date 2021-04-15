@@ -6,8 +6,8 @@
 
 #include "simcpp20.hpp"
 
-simcpp20::process clock_proc(simcpp20::simulation &sim, std::string name,
-                             double delay) {
+simcpp20::event clock_proc(simcpp20::simulation &sim, std::string name,
+                           double delay) {
   while (true) {
     std::cout << name << " " << sim.now() << std::endl;
     co_await sim.timeout(delay);
