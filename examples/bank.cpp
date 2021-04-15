@@ -21,9 +21,8 @@ simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
   printf("[%5.1f] Customer %d arrives\n", sim.now(), id);
 
   auto request = conf.counters.request();
-  auto timeout = sim.timeout(conf.max_wait_time);
   // internal compiler error when directly awaiting return value of sim.any_of
-  auto any_of = sim.any_of({request, timeout});
+  auto any_of = sim.any_of({request, sim.timeout(conf.max_wait_time)});
   co_await any_of;
 
   if (!request.triggered()) {
@@ -44,10 +43,7 @@ simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
 simcpp20::event customer_source(simcpp20::simulation &sim, config &conf) {
   for (int id = 1; id <= conf.n_customers; ++id) {
     auto proc = customer(sim, conf, id);
-
-    auto arrival_interval =
-        conf.exp_dist(conf.gen) * conf.mean_arrival_interval;
-    co_await sim.timeout(arrival_interval);
+    co_await sim.timeout(conf.exp_dist(conf.gen) * conf.mean_arrival_interval);
   }
 }
 
@@ -60,9 +56,9 @@ int main() {
       .mean_arrival_interval = 10,
       .max_wait_time = 16,
       .mean_service_time = 12,
-      .counters{sim, 1},
-      .gen{std::default_random_engine{rd()}},
-      .exp_dist{},
+      .counters = resource{sim, 1},
+      .gen = std::default_random_engine{rd()},
+      .exp_dist = std::exponential_distribution{},
   };
 
   customer_source(sim, conf);
