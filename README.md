@@ -11,7 +11,6 @@ For this to work, `g++` must be on version 10 (you can try `g++-10` too).
 A short example simulating two clocks ticking in different time intervals looks like this:
 
 ```c++
-#include <coroutine>
 #include <iostream>
 
 #include "simcpp20.hpp"
