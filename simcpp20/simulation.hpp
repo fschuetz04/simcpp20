@@ -42,7 +42,7 @@ public:
    * @return Created event.
    */
   template <std::derived_from<simcpp20::event> T = simcpp20::event> T event() {
-    return simcpp20::event{*this};
+    return T{*this};
   }
 
   /**
