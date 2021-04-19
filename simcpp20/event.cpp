@@ -3,6 +3,8 @@
 
 #include "event.hpp"
 
+#include <cassert> // assert
+
 #include "simulation.hpp"
 
 namespace simcpp20 {

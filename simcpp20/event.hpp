@@ -3,14 +3,9 @@
 
 #pragma once
 
-// TODO(fschuetz04): reduce includes
-#include <cassert>    // assert
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
-#include <cstdint>    // uint64_t
-#include <functional> // std::function, std::greater
+#include <functional> // std::function
 #include <memory>     // std::make_shared, std::shared_ptr
-#include <optional>   // std::optional
-#include <queue>      // std::priority_queue
 #include <vector>     // std::vector
 
 namespace simcpp20 {

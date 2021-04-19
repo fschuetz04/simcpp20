@@ -3,6 +3,9 @@
 
 #include "simulation.hpp"
 
+#include <cassert> // assert
+#include <memory>  // std::make_shared
+
 namespace simcpp20 {
 event_alias simulation::event() {
   return event_alias{*this};
