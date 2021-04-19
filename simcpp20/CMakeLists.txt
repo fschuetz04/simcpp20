@@ -1,9 +1,4 @@
-add_library(simcpp20
-    event.cpp
-    event_promise_type.cpp
-    event_shared_state.cpp
-    scheduled_event.cpp
-    simulation.cpp)
+add_library(simcpp20 INTERFACE)
 
-target_include_directories(simcpp20 PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-target_compile_options(simcpp20 PUBLIC -fcoroutines -std=c++20)
+target_include_directories(simcpp20 INTERFACE ${CMAKE_CURRENT_LIST_DIR})
+target_compile_options(simcpp20 INTERFACE -fcoroutines -std=c++20)
