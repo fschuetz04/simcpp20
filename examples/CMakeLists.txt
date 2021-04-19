@@ -1,4 +1,6 @@
 set(Targets
+    all_of
+    any_of
     bank
     carwash
     clocks
