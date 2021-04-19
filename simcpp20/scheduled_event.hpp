@@ -18,7 +18,7 @@ public:
    * insertion order.
    * @param ev Event to process.
    */
-  scheduled_event(simtime time, id_type id, event ev);
+  scheduled_event(time_type time, id_type id, event ev);
 
   /**
    * @param other Scheduled event to compare to.
@@ -27,14 +27,14 @@ public:
   bool operator>(const scheduled_event &other) const;
 
   /// @return Time at which to process the event.
-  simtime time() const;
+  time_type time() const;
 
   /// @return Event to process.
   event ev();
 
 private:
   /// Time at which to process the event.
-  simtime time_;
+  time_type time_;
 
   /**
    * Incremental ID to sort events scheduled at the same time by insertion

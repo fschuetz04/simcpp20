@@ -41,7 +41,7 @@ public:
    *
    * @param delay Delay after which to process the event.
    */
-  void trigger_delayed(simtime delay);
+  void trigger_delayed(time_type delay);
 
   /// Set the event state to aborted.
   void abort();

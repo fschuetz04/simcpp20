@@ -17,7 +17,7 @@ void event::trigger() {
   shared->sim.schedule(0, *this);
 }
 
-void event::trigger_delayed(simtime delay) {
+void event::trigger_delayed(time_type delay) {
   if (!pending()) {
     return;
   }

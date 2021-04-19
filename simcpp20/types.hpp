@@ -7,5 +7,5 @@
 
 namespace simcpp20 {
 using id_type = uint64_t;
-using simtime = double;
+using time_type = double;
 } // namespace simcpp20

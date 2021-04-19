@@ -63,7 +63,7 @@ void simulation::run() {
   }
 }
 
-void simulation::run_until(simtime target) {
+void simulation::run_until(time_type target) {
   if (target < now()) {
     return;
   }
@@ -75,7 +75,7 @@ void simulation::run_until(simtime target) {
   now_ = target;
 }
 
-simtime simulation::now() {
+time_type simulation::now() {
   return now_;
 }
 
@@ -83,7 +83,7 @@ bool simulation::empty() {
   return scheduled_evs.empty();
 }
 
-void simulation::schedule(simtime delay, simcpp20::event ev) {
+void simulation::schedule(time_type delay, simcpp20::event ev) {
   scheduled_evs.emplace(now() + delay, next_id, ev);
   next_id++;
 }

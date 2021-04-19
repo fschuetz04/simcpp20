@@ -29,7 +29,7 @@ public:
    * @return Created event.
    */
   template <std::derived_from<simcpp20::event> T = simcpp20::event>
-  T timeout(simtime delay) {
+  T timeout(time_type delay) {
     auto ev = event<T>();
     schedule(delay, ev);
     return ev;
@@ -91,17 +91,17 @@ public:
    *
    * @param target Target time.
    */
-  void run_until(simtime target);
+  void run_until(time_type target);
 
   /// @return Current simulation time.
-  simtime now();
+  time_type now();
 
   /// @return Whether the event queue is empty.
   bool empty();
 
 private:
   /// Current simulation time.
-  simtime now_ = 0;
+  time_type now_ = 0;
 
   /// Event queue.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
@@ -117,7 +117,7 @@ private:
    * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
    */
-  void schedule(simtime delay, simcpp20::event ev);
+  void schedule(time_type delay, simcpp20::event ev);
 
   // event needs access to simulation::schedule
   friend class event;
