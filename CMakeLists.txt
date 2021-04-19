@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 project(simcpp20)
 
@@ -8,3 +8,4 @@ endif()
 
 add_subdirectory(simcpp20)
 add_subdirectory(examples)
+add_subdirectory(tests)
