@@ -1,10 +1,2 @@
-*
-!*.cpp
-!*.hpp
-!*.md
-!.clang-format
-!.gitignore
-!CMakeLists.txt
-!examples
-!LICENSE
-!simcpp20
+/.vscode
+/build
