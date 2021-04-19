@@ -53,7 +53,7 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
-.examples/clocks
+examples/clocks
 ```
 
 Currently, the CMake files only support GCC with a minimum version of 10.
