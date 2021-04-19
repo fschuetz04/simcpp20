@@ -1,7 +1,10 @@
 set(Targets
     bank
     carwash
-    clocks)
+    clocks
+    ping-pong
+    value-event
+    value-process)
 
 foreach(Target ${Targets})
     add_executable(${Target} ${Target}.cpp)
