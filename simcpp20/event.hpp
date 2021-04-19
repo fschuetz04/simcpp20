@@ -3,6 +3,16 @@
 
 #pragma once
 
+// TODO(fschuetz04): reduce includes
+#include <cassert>    // assert
+#include <coroutine>  // std::coroutine_handle, std::suspend_never
+#include <cstdint>    // uint64_t
+#include <functional> // std::function, std::greater
+#include <memory>     // std::make_shared, std::shared_ptr
+#include <optional>   // std::optional
+#include <queue>      // std::priority_queue
+#include <vector>     // std::vector
+
 namespace simcpp20 {
 class simulation;
 
@@ -14,7 +24,7 @@ public:
    *
    * @param simulation Reference to simulation.
    */
-  explicit event(simulation &sim) : shared{std::make_shared<data>(sim)} {}
+  explicit event(simulation &sim);
 
   /**
    * Set the event state to triggered and schedule it to be processed
@@ -35,69 +45,42 @@ public:
    * TODO(fschuetz04): Check whether used on a process? Destroy process
    * coroutine?
    */
-  void abort() {
-    if (!pending()) {
-      return;
-    }
-
-    shared->state = state::aborted;
-
-    for (auto &handle : shared->handles) {
-      handle.destroy();
-    }
-    shared->handles.clear();
-
-    shared->cbs.clear();
-  }
+  void abort();
 
   /**
    * Add a callback to the event to be called when the event is processed.
    *
    * @param cb Callback to add to the event.
    */
-  void add_callback(std::function<void(event &)> cb) {
-    if (processed() || aborted()) {
-      return;
-    }
-
-    shared->cbs.emplace_back(cb);
-  }
+  void add_callback(std::function<void(event &)> cb);
 
   /// @return Whether the event is pending.
-  bool pending() { return shared->state == state::pending; }
+  bool pending();
 
   /// @return Whether the event is triggered or processed.
-  bool triggered() { return shared->state == state::triggered || processed(); }
+  bool triggered();
 
   /// @return Whether the event is processed.
-  bool processed() { return shared->state == state::processed; }
+  bool processed();
 
   /// @return Whether the event is aborted.
-  bool aborted() { return shared->state == state::aborted; }
+  bool aborted();
 
   /**
    * @return Whether the event is already processed and a waiting coroutine must
    * not be paused.
    */
-  bool await_ready() { return processed(); }
+  bool await_ready();
 
   /**
    * Resume a waiting coroutine when the event is processed.
    *
    * @param handle Handle of the waiting coroutine.
    */
-  void await_suspend(std::coroutine_handle<> handle) {
-    assert(!processed());
-
-    if (!aborted() && !processed()) {
-      shared->handles.push_back(handle);
-    }
-
-    shared = nullptr;
-  }
+  void await_suspend(std::coroutine_handle<> handle);
 
   /// No-op.
-  void await_resume() {}
+  void await_resume();
 
   /// Promise type for process coroutines.
   class promise_type;
@@ -109,23 +92,7 @@ private:
    * Set the event state to processed. Call all callbacks for this event.
    * Resume all coroutines waiting for this event.
    */
-  void process() {
-    if (processed() || aborted()) {
-      return;
-    }
-
-    shared->state = state::processed;
-
-    for (auto &handle : shared->handles) {
-      handle.resume();
-    }
-    shared->handles.clear();
-
-    for (auto &cb : shared->cbs) {
-      cb(*this);
-    }
-    shared->cbs.clear();
-  }
+  void process();
 
   /// State of an event.
   enum class state {
@@ -163,14 +130,10 @@ private:
     simulation &sim;
 
     /// Construct a new shared data instance.
-    explicit data(simulation &sim) : sim{sim} {}
+    explicit data(simulation &sim);
 
     /// Destroy all coroutines still waiting for the event.
-    ~data() {
-      for (auto &handle : handles) {
-        handle.destroy();
-      }
-    }
+    ~data();
   };
 
   /// Shared data of the event.
@@ -194,7 +157,7 @@ public:
   explicit promise_type(simulation &sim, Args &&...) : sim{sim}, ev{sim} {}
 
   /// @return Event which will be triggered when the process finishes.
-  event get_return_object() { return ev; }
+  event get_return_object();
 
   /**
    * Register the process to be started immediately via an initial event.
@@ -204,13 +167,13 @@ public:
   event initial_suspend();
 
   /// @return Awaitable which is always ready.
-  std::suspend_never final_suspend() noexcept { return {}; }
+  std::suspend_never final_suspend() noexcept;
 
   /// No-op.
-  void unhandled_exception() {}
+  void unhandled_exception();
 
   /// Trigger the underlying event since the process finished.
-  void return_void() { ev.trigger(); }
+  void return_void();
 
 private:
   /// Refernece to the simulation.
@@ -219,29 +182,4 @@ private:
   /// Underlying event which is triggered when the process finishes.
   event ev;
 };
-} // namespace simcpp20
-
-#include "simulation.hpp"
-
-namespace simcpp20 {
-void event::trigger() {
-  if (!pending()) {
-    return;
-  }
-
-  shared->sim.schedule(*this);
-  shared->state = state::triggered;
-}
-
-event event::promise_type::initial_suspend() {
-  event ev{sim};
-  sim.schedule(ev);
-  return ev;
-}
-
-template <class T> event value_event<T>::promise_type::initial_suspend() {
-  event ev{sim};
-  sim.schedule(ev);
-  return ev;
-}
 } // namespace simcpp20

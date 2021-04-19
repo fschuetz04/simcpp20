@@ -3,6 +3,17 @@
 
 #pragma once
 
+// TODO(fschuetz04): reduce includes
+#include <cassert>    // assert
+#include <coroutine>  // std::coroutine_handle, std::suspend_never
+#include <cstdint>    // uint64_t
+#include <functional> // std::function, std::greater
+#include <memory>     // std::make_shared, std::shared_ptr
+#include <optional>   // std::optional
+#include <queue>      // std::priority_queue
+#include <vector>     // std::vector
+
+#include "event.hpp"
 #include "value_event.hpp"
 
 namespace simcpp20 {
@@ -20,7 +31,7 @@ using event_alias = event;
 class simulation {
 public:
   /// @return Pending event.
-  event_alias event() { return event_alias{*this}; }
+  event_alias event();
 
   /**
    * @tparam T Value type of the event.
@@ -32,11 +43,7 @@ public:
    * @param delay Delay after which to process the event.
    * @return Pending event.
    */
-  event_alias timeout(time_type delay) {
-    auto ev = event();
-    schedule(ev, delay);
-    return ev;
-  }
+  event_alias timeout(time_type delay);
 
   /**
    * @tparam T Value type of the event.
@@ -60,21 +67,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  simcpp20::event any_of(std::vector<simcpp20::event> evs) {
-    for (auto &ev : evs) {
-      if (ev.processed()) {
-        return timeout(0);
-      }
-    }
-
-    auto any_of_ev = event();
-
-    for (auto &ev : evs) {
-      ev.add_callback([any_of_ev](auto) mutable { any_of_ev.trigger(); });
-    }
-
-    return any_of_ev;
-  }
+  simcpp20::event any_of(std::vector<simcpp20::event> evs);
 
   /**
    * Create a pending event which is triggered when all of the given events are
@@ -85,33 +78,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  simcpp20::event all_of(std::vector<simcpp20::event> evs) {
-    int n = evs.size();
-
-    for (auto &ev : evs) {
-      if (ev.processed()) {
-        --n;
-      }
-    }
-
-    if (n == 0) {
-      return timeout(0);
-    }
-
-    auto all_of_ev = event();
-    auto n_ptr = std::make_shared<int>(n);
-
-    for (auto &ev : evs) {
-      ev.add_callback([all_of_ev, n_ptr](auto) mutable {
-        --*n_ptr;
-        if (*n_ptr == 0) {
-          all_of_ev.trigger();
-        }
-      });
-    }
-
-    return all_of_ev;
-  }
+  simcpp20::event all_of(std::vector<simcpp20::event> evs);
 
   /**
    * Schedule the given event to be processed after the given delay.
@@ -119,34 +86,17 @@ public:
    * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
    */
-  void schedule(event_alias ev, time_type delay = 0) {
-    if (delay < 0) {
-      assert(false);
-      return;
-    }
-
-    scheduled_evs.emplace(now() + delay, next_id, ev);
-    ++next_id;
-  }
+  void schedule(event_alias ev, time_type delay = 0);
 
   /**
    * Extract the next scheduled event from the event queue and process it.
    *
    * @throw When the event queue is empty.
    */
-  void step() {
-    auto scheduled_ev = scheduled_evs.top();
-    scheduled_evs.pop();
-    now_ = scheduled_ev.time();
-    scheduled_ev.ev().process();
-  }
+  void step();
 
   /// Run the simulation until the event queue is empty.
-  void run() {
-    while (!empty()) {
-      step();
-    }
-  }
+  void run();
 
   /**
    * Run the simulation until the next scheduled event is scheduled at or after
@@ -154,24 +104,13 @@ public:
    *
    * @param target Target time.
    */
-  void run_until(time_type target) {
-    if (target < now()) {
-      assert(false);
-      return;
-    }
-
-    while (!empty() && scheduled_evs.top().time() < target) {
-      step();
-    }
-
-    now_ = target;
-  }
+  void run_until(time_type target);
 
   /// @return Whether the event queue is empty.
-  bool empty() { return scheduled_evs.empty(); }
+  bool empty();
 
   /// @return Current simulation time.
-  time_type now() { return now_; }
+  time_type now();
 
 private:
   /// One event in the event queue.
@@ -185,26 +124,19 @@ private:
      * insertion order.
      * @param ev Event to process.
      */
-    scheduled_event(time_type time, id_type id, simcpp20::event ev)
-        : time_{time}, id{id}, ev_{ev} {}
+    scheduled_event(time_type time, id_type id, simcpp20::event ev);
 
     /**
      * @param other Scheduled event to compare to.
      * @return Whether this event is scheduled before the given event.
      */
-    bool operator>(const scheduled_event &other) const {
-      if (time() != other.time()) {
-        return time() > other.time();
-      }
-
-      return id > other.id;
-    }
+    bool operator>(const scheduled_event &other) const;
 
     /// @return Time at which to process the event.
-    time_type time() const { return time_; }
+    time_type time() const;
 
     /// @return Event to process.
-    simcpp20::event ev() { return ev_; }
+    simcpp20::event ev();
 
   private:
     /// Time at which to process the event.
@@ -231,4 +163,10 @@ private:
   /// Next ID for scheduling an event.
   id_type next_id = 0;
 };
+
+template <class T> event value_event<T>::promise_type::initial_suspend() {
+  event ev{sim};
+  sim.schedule(ev);
+  return ev;
+}
 } // namespace simcpp20
