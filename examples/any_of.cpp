@@ -7,9 +7,15 @@
 
 simcpp20::event process(simcpp20::simulation &sim) {
   printf("[%.0f] 1\n", sim.now());
-  co_await sim.any_of({sim.timeout(1), sim.timeout(2)});
+
+  // internal compiler error in some GCC versions when awaiting sim.any_of
+  // directly
+  auto ev = sim.any_of({sim.timeout(1), sim.timeout(2)});
+  co_await ev;
   printf("[%.0f] 2\n", sim.now());
-  co_await sim.any_of({sim.timeout(1), sim.event()});
+
+  ev = sim.any_of({sim.timeout(1), sim.event()});
+  co_await ev;
   printf("[%.0f] 3\n", sim.now());
 }
 
