@@ -4,6 +4,7 @@ set(Targets
     bank
     carwash
     clocks
+    machine_shop
     ping_pong
     value_event
     value_process)
