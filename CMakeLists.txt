@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.14)
 
 if(DEFINED PROJECT_NAME)
-    set(IsSubproject ON)
+    set(SimCpp20IsSubproject ON)
 else()
-    set(IsSubproject OFF)
+    set(SimCpp20IsSubproject OFF)
 endif()
 
 project(SimCpp20
@@ -18,7 +18,7 @@ endif()
 
 add_subdirectory(simcpp20)
 
-if(NOT IsSubproject)
+if(NOT SimCpp20IsSubproject)
     add_subdirectory(examples)
     add_subdirectory(tests)
 endif()
