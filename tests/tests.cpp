@@ -5,13 +5,40 @@
 
 #include "simcpp20.hpp"
 
-unsigned int Factorial(unsigned int number) {
-  return number <= 1 ? number : Factorial(number - 1) * number;
+simcpp20::event awaiter(simcpp20::simulation &sim, simcpp20::event ev,
+                        double target, bool &finished) {
+  REQUIRE(sim.now() == 0);
+  co_await ev;
+  REQUIRE(sim.now() == target);
+  finished = true;
+};
+
+TEST_CASE("any_of") {
+  simcpp20::simulation sim;
+
+  SECTION("any_of is triggered when the first event is processed") {
+    auto ev = sim.any_of({sim.timeout(1), sim.timeout(2)});
+    double target = 1;
+    bool finished = false;
+    awaiter(sim, ev, target, finished);
+
+    sim.run();
+
+    REQUIRE(finished);
+  }
 }
 
-TEST_CASE("Factorials are computed", "[factorial]") {
-  REQUIRE(Factorial(1) == 1);
-  REQUIRE(Factorial(2) == 2);
-  REQUIRE(Factorial(3) == 6);
-  REQUIRE(Factorial(10) == 3628800);
+TEST_CASE("all_of") {
+  simcpp20::simulation sim;
+
+  SECTION("all_of is triggered when all events are processed") {
+    auto ev = sim.all_of({sim.timeout(1), sim.timeout(2)});
+    double target = 2;
+    bool finished = false;
+    awaiter(sim, ev, target, finished);
+
+    sim.run();
+
+    REQUIRE(finished);
+  }
 }
