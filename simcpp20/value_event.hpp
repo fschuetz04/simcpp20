@@ -47,8 +47,8 @@ public:
 
   /// @return Value of the event.
   T value() const {
-    assert(*value_);
-    return **value_;
+    assert(value_->has_value());
+    return value_->value();
   }
 
   /// Promise type for value process coroutines.
