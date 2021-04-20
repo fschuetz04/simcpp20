@@ -1,5 +1,9 @@
-#define CATCH_CONFIG_MAIN
-#include "catch2/catch.hpp"
+// Copyright © 2021 Felix Schütz.
+// Licensed under the MIT license. See the LICENSE file for details.
+
+#include <catch2/catch_test_macros.hpp>
+
+#include "simcpp20.hpp"
 
 unsigned int Factorial(unsigned int number) {
   return number <= 1 ? number : Factorial(number - 1) * number;
