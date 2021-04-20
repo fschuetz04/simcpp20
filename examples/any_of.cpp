@@ -8,14 +8,10 @@
 simcpp20::event process(simcpp20::simulation &sim) {
   printf("[%.0f] 1\n", sim.now());
 
-  // internal compiler error in some GCC versions when awaiting sim.any_of
-  // directly
-  auto ev = sim.any_of({sim.timeout(1), sim.timeout(2)});
-  co_await ev;
+  co_await(sim.timeout(1) | sim.timeout(2));
   printf("[%.0f] 2\n", sim.now());
 
-  ev = sim.any_of({sim.timeout(1), sim.event()});
-  co_await ev;
+  co_await(sim.timeout(1) | sim.event());
   printf("[%.0f] 3\n", sim.now());
 }
 
