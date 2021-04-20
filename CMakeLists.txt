@@ -1,3 +1,5 @@
+# TODO include simcpp20 in subfolder, move target into namespace
+
 cmake_minimum_required(VERSION 3.14)
 
 if(DEFINED PROJECT_NAME)
