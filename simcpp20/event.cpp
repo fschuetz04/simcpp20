@@ -74,6 +74,14 @@ void event::await_suspend(std::coroutine_handle<> handle) {
 
 void event::await_resume() {}
 
+event event::operator|(event other) {
+  return shared->sim.any_of({*this, other});
+}
+
+event event::operator&(event other) {
+  return shared->sim.all_of({*this, other});
+}
+
 void event::process() {
   if (processed() || aborted()) {
     return;

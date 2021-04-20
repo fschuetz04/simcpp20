@@ -29,6 +29,7 @@ public:
    *
    * TODO(fschuetz04): Check whether used on a process?
    * TODO(fschuetz04): trigger_delayed()?
+   * TODO(fschuetz04): Which methods can be const?
    */
   void trigger();
 
@@ -76,6 +77,24 @@ public:
 
   /// No-op.
   void await_resume();
+
+  /**
+   * Alias for sim.any_of. Create a pending event which is triggered when this
+   * event or the given event is processed.
+   *
+   * @param other Given event.
+   * @return Created event.
+   */
+  event operator|(event other);
+
+  /**
+   * Alias for sim.all_of. Create a pending event which is triggered when this
+   * event and the given event is processed.
+   *
+   * @param other Given event.
+   * @return Created event.
+   */
+  event operator&(event other);
 
   /// Promise type for process coroutines.
   class promise_type;

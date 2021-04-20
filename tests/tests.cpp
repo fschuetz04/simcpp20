@@ -17,14 +17,33 @@ TEST_CASE("any_of") {
   simcpp20::simulation sim;
 
   SECTION("any_of is triggered when the first event is processed") {
-    auto ev = sim.any_of({sim.timeout(1), sim.timeout(2)});
-    double target = 1;
-    bool finished = false;
-    awaiter(sim, ev, target, finished);
+    auto first_ev = sim.any_of({sim.timeout(1), sim.timeout(2)});
+    bool first_finished = false;
+    awaiter(sim, first_ev, 1, first_finished);
+
+    auto second_ev = sim.any_of({sim.timeout(2), sim.timeout(1)});
+    bool second_finished = false;
+    awaiter(sim, second_ev, 1, second_finished);
 
     sim.run();
 
-    REQUIRE(finished);
+    REQUIRE(first_finished);
+    REQUIRE(second_finished);
+  }
+
+  SECTION("| is an alias for any_of") {
+    auto first_ev = sim.timeout(1) | sim.timeout(2);
+    auto first_finished = false;
+    awaiter(sim, first_ev, 1, first_finished);
+
+    auto second_ev = sim.timeout(2) | sim.timeout(1);
+    auto second_finished = false;
+    awaiter(sim, second_ev, 1, second_finished);
+
+    sim.run();
+
+    REQUIRE(first_finished);
+    REQUIRE(second_finished);
   }
 }
 
@@ -32,13 +51,32 @@ TEST_CASE("all_of") {
   simcpp20::simulation sim;
 
   SECTION("all_of is triggered when all events are processed") {
-    auto ev = sim.all_of({sim.timeout(1), sim.timeout(2)});
-    double target = 2;
-    bool finished = false;
-    awaiter(sim, ev, target, finished);
+    auto first_ev = sim.all_of({sim.timeout(1), sim.timeout(2)});
+    bool first_finished = false;
+    awaiter(sim, first_ev, 2, first_finished);
+
+    auto second_ev = sim.all_of({sim.timeout(2), sim.timeout(1)});
+    bool second_finished = false;
+    awaiter(sim, second_ev, 2, second_finished);
 
     sim.run();
 
-    REQUIRE(finished);
+    REQUIRE(first_finished);
+    REQUIRE(second_finished);
+  }
+
+  SECTION("& is an alias for any_of") {
+    auto first_ev = sim.timeout(1) & sim.timeout(2);
+    auto first_finished = false;
+    awaiter(sim, first_ev, 2, first_finished);
+
+    auto second_ev = sim.timeout(2) & sim.timeout(1);
+    auto second_finished = false;
+    awaiter(sim, second_ev, 2, second_finished);
+
+    sim.run();
+
+    REQUIRE(first_finished);
+    REQUIRE(second_finished);
   }
 }
