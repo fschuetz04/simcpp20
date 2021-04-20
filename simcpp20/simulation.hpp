@@ -47,7 +47,7 @@ public:
    * @return Pending value event.
    */
   template <class T> value_event<T> timeout(time_type delay, T value) {
-    value_event<T> ev{*this};
+    auto ev = event<T>();
     *ev.value_ = value;
     schedule(ev, delay);
     return ev;
@@ -102,10 +102,10 @@ public:
   void run_until(time_type target);
 
   /// @return Whether the event queue is empty.
-  bool empty();
+  bool empty() const;
 
   /// @return Current simulation time.
-  time_type now();
+  time_type now() const;
 
 private:
   /// One event in the event queue.
@@ -131,7 +131,7 @@ private:
     time_type time() const;
 
     /// @return Event to process.
-    simcpp20::event ev();
+    simcpp20::event ev() const;
 
   private:
     /// Time at which to process the event.
@@ -159,9 +159,7 @@ private:
   id_type next_id = 0;
 };
 
-template <class T> event value_event<T>::promise_type::initial_suspend() {
-  event ev{sim};
-  sim.schedule(ev);
-  return ev;
+template <class T> event value_event<T>::promise_type::initial_suspend() const {
+  return sim.timeout(0);
 }
 } // namespace simcpp20

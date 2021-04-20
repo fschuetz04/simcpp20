@@ -10,7 +10,7 @@
 namespace simcpp20 {
 event::event(simulation &sim) : shared{std::make_shared<data>(sim)} {}
 
-void event::trigger() {
+void event::trigger() const {
   if (!pending()) {
     return;
   }
@@ -19,7 +19,7 @@ void event::trigger() {
   shared->state = state::triggered;
 }
 
-void event::abort() {
+void event::abort() const {
   if (!pending()) {
     return;
   }
@@ -34,7 +34,7 @@ void event::abort() {
   shared->cbs.clear();
 }
 
-void event::add_callback(std::function<void(event &)> cb) {
+void event::add_callback(std::function<void(const event &)> cb) const {
   if (processed() || aborted()) {
     return;
   }
@@ -42,23 +42,23 @@ void event::add_callback(std::function<void(event &)> cb) {
   shared->cbs.emplace_back(cb);
 }
 
-bool event::pending() {
+bool event::pending() const {
   return shared->state == state::pending;
 }
 
-bool event::triggered() {
+bool event::triggered() const {
   return shared->state == state::triggered || processed();
 }
 
-bool event::processed() {
+bool event::processed() const {
   return shared->state == state::processed;
 }
 
-bool event::aborted() {
+bool event::aborted() const {
   return shared->state == state::aborted;
 }
 
-bool event::await_ready() {
+bool event::await_ready() const {
   return processed();
 }
 
@@ -72,17 +72,17 @@ void event::await_suspend(std::coroutine_handle<> handle) {
   shared = nullptr;
 }
 
-void event::await_resume() {}
+void event::await_resume() const {}
 
-event event::operator|(event other) {
+event event::operator|(const event &other) const {
   return shared->sim.any_of({*this, other});
 }
 
-event event::operator&(event other) {
+event event::operator&(const event &other) const {
   return shared->sim.all_of({*this, other});
 }
 
-void event::process() {
+void event::process() const {
   if (processed() || aborted()) {
     return;
   }
@@ -108,23 +108,21 @@ event::data::~data() {
   }
 }
 
-event event::promise_type::get_return_object() {
+event event::promise_type::get_return_object() const {
   return ev;
 }
 
-event event::promise_type::initial_suspend() {
-  event ev{sim};
-  sim.schedule(ev);
-  return ev;
+event event::promise_type::initial_suspend() const {
+  return sim.timeout(0);
 }
 
-std::suspend_never event::promise_type::final_suspend() noexcept {
+std::suspend_never event::promise_type::final_suspend() const noexcept {
   return {};
 }
 
-void event::promise_type::unhandled_exception() {}
+void event::promise_type::unhandled_exception() const {}
 
-void event::promise_type::return_void() {
+void event::promise_type::return_void() const {
   ev.trigger();
 }
 } // namespace simcpp20

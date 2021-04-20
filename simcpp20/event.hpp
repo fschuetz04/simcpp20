@@ -29,9 +29,8 @@ public:
    *
    * TODO(fschuetz04): Check whether used on a process?
    * TODO(fschuetz04): trigger_delayed()?
-   * TODO(fschuetz04): Which methods can be const?
    */
-  void trigger();
+  void trigger() const;
 
   /**
    * Set the event state to aborted and destroy all coroutines waiting for it.
@@ -41,32 +40,32 @@ public:
    * TODO(fschuetz04): Check whether used on a process? Destroy process
    * coroutine?
    */
-  void abort();
+  void abort() const;
 
   /**
    * Add a callback to the event to be called when the event is processed.
    *
    * @param cb Callback to add to the event.
    */
-  void add_callback(std::function<void(event &)> cb);
+  void add_callback(std::function<void(const event &)> cb) const;
 
   /// @return Whether the event is pending.
-  bool pending();
+  bool pending() const;
 
   /// @return Whether the event is triggered or processed.
-  bool triggered();
+  bool triggered() const;
 
   /// @return Whether the event is processed.
-  bool processed();
+  bool processed() const;
 
   /// @return Whether the event is aborted.
-  bool aborted();
+  bool aborted() const;
 
   /**
    * @return Whether the event is already processed and a waiting coroutine must
    * not be paused.
    */
-  bool await_ready();
+  bool await_ready() const;
 
   /**
    * Resume a waiting coroutine when the event is processed.
@@ -76,7 +75,7 @@ public:
   void await_suspend(std::coroutine_handle<> handle);
 
   /// No-op.
-  void await_resume();
+  void await_resume() const;
 
   /**
    * Alias for sim.any_of. Create a pending event which is triggered when this
@@ -85,7 +84,7 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator|(event other);
+  event operator|(const event &other) const;
 
   /**
    * Alias for sim.all_of. Create a pending event which is triggered when this
@@ -94,7 +93,7 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator&(event other);
+  event operator&(const event &other) const;
 
   /// Promise type for process coroutines.
   class promise_type;
@@ -106,7 +105,7 @@ private:
    * Set the event state to processed. Call all callbacks for this event.
    * Resume all coroutines waiting for this event.
    */
-  void process();
+  void process() const;
 
   /// State of an event.
   enum class state {
@@ -138,7 +137,7 @@ private:
     std::vector<std::coroutine_handle<>> handles{};
 
     /// Callbacks for this event.
-    std::vector<std::function<void(event &)>> cbs{};
+    std::vector<std::function<void(const event &)>> cbs{};
 
     /// Reference to the simulation.
     simulation &sim;
@@ -171,29 +170,29 @@ public:
   explicit promise_type(simulation &sim, Args &&...) : sim{sim}, ev{sim} {}
 
   /// @return Event which will be triggered when the process finishes.
-  event get_return_object();
+  event get_return_object() const;
 
   /**
    * Register the process to be started immediately via an initial event.
    *
    * @return Initial event.
    */
-  event initial_suspend();
+  event initial_suspend() const;
 
   /// @return Awaitable which is always ready.
-  std::suspend_never final_suspend() noexcept;
+  std::suspend_never final_suspend() const noexcept;
 
   /// No-op.
-  void unhandled_exception();
+  void unhandled_exception() const;
 
   /// Trigger the underlying event since the process finished.
-  void return_void();
+  void return_void() const;
 
 private:
   /// Refernece to the simulation.
   simulation &sim;
 
   /// Underlying event which is triggered when the process finishes.
-  event ev;
+  const event ev;
 };
 } // namespace simcpp20

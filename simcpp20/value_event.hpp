@@ -33,7 +33,7 @@ public:
    *
    * @param value Value of the event.
    */
-  void trigger(T value) {
+  void trigger(T value) const {
     if (!pending()) {
       return;
     }
@@ -43,10 +43,10 @@ public:
   }
 
   /// @return Value of the event.
-  T await_resume() { return value(); }
+  T await_resume() const { return value(); }
 
   /// @return Value of the event.
-  T value() {
+  T value() const {
     assert(*value_);
     return **value_;
   }
@@ -65,33 +65,33 @@ public:
     explicit promise_type(simulation &sim, Args &&...) : sim{sim}, ev{sim} {}
 
     /// @return Event which will be triggered when the process finishes.
-    value_event<T> get_return_object() { return ev; }
+    value_event<T> get_return_object() const { return ev; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event initial_suspend();
+    event initial_suspend() const;
 
     /// @return Awaitable which is always ready.
-    std::suspend_never final_suspend() noexcept { return {}; }
+    std::suspend_never final_suspend() const noexcept { return {}; }
 
     /// No-op.
-    void unhandled_exception() {}
+    void unhandled_exception() const {}
 
     /// No-op. Should never be called.
-    void return_void() { assert(false); }
+    void return_void() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
-    void return_value(T value) { ev.trigger(value); }
+    void return_value(T value) const { ev.trigger(value); }
 
   private:
     /// Reference to the simulation.
     simulation &sim;
 
     /// Underlying event which is triggered when the process finishes.
-    value_event<T> ev;
+    const value_event<T> ev;
   };
 
 private:

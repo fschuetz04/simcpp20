@@ -18,7 +18,7 @@ event_alias simulation::timeout(time_type delay) {
 }
 
 event_alias simulation::any_of(std::vector<event_alias> evs) {
-  for (auto &ev : evs) {
+  for (const auto &ev : evs) {
     if (ev.processed()) {
       return timeout(0);
     }
@@ -26,7 +26,7 @@ event_alias simulation::any_of(std::vector<event_alias> evs) {
 
   auto any_of_ev = event();
 
-  for (auto &ev : evs) {
+  for (const auto &ev : evs) {
     ev.add_callback([any_of_ev](auto) mutable { any_of_ev.trigger(); });
   }
 
@@ -36,7 +36,7 @@ event_alias simulation::any_of(std::vector<event_alias> evs) {
 event_alias simulation::all_of(std::vector<event_alias> evs) {
   int n = evs.size();
 
-  for (auto &ev : evs) {
+  for (const auto &ev : evs) {
     if (ev.processed()) {
       --n;
     }
@@ -49,7 +49,7 @@ event_alias simulation::all_of(std::vector<event_alias> evs) {
   auto all_of_ev = event();
   auto n_ptr = std::make_shared<int>(n);
 
-  for (auto &ev : evs) {
+  for (const auto &ev : evs) {
     ev.add_callback([all_of_ev, n_ptr](auto) mutable {
       --*n_ptr;
       if (*n_ptr == 0) {
@@ -97,11 +97,11 @@ void simulation::run_until(time_type target) {
   now_ = target;
 }
 
-bool simulation::empty() {
+bool simulation::empty() const {
   return scheduled_evs.empty();
 }
 
-time_type simulation::now() {
+time_type simulation::now() const {
   return now_;
 }
 
@@ -122,7 +122,7 @@ time_type simulation::scheduled_event::time() const {
   return time_;
 }
 
-event_alias simulation::scheduled_event::ev() {
+event_alias simulation::scheduled_event::ev() const {
   return ev_;
 }
 } // namespace simcpp20
