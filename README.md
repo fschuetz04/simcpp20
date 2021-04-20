@@ -69,6 +69,26 @@ Again, you can try using `g++-10` instead.
 
 More examples can be found in the `examples/` folder.
 
+If you want to use SimCpp20 in your project, the easiest option is to use CMake with FetchContent.
+A simple configuration looks like this:
+
+```cmake
+cmake_minimum_required(VERSION 3.14)
+
+project(MyApp)
+
+include(FetchContent)
+
+FetchContent_Declare(SimCpp20
+    GIT_REPOSITORY https://github.com/fschuetz04/simcpp20
+    GIT_TAG        5a14ec439ac6e367d3169b0a370d68659942c12b) # v0.1.0
+
+FetchContent_MakeAvailable(SimCpp20)
+
+add_executable(app app.cpp)
+target_link_libraries(app PRIVATE simcpp20)
+```
+
 ## Copyright and License
 
 Copyright © 2021 Felix Schütz.
