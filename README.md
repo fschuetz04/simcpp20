@@ -57,7 +57,7 @@ examples/clocks
 ```
 
 Currently, the CMake files only support GCC with a minimum version of 10.
-If version 10 of GCC later is available under a different name (for example `g++-10`), you can try `CXX=g++10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
+If version 10 of GCC later is available under a different name (for example `g++-10`), you can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
 If you do not want to use CMake, you can use the GCC directly:
 
 ```shell
