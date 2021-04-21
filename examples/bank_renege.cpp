@@ -12,9 +12,9 @@
 struct config {
   int n_customers;
   resource counters;
-  std::uniform_real_distribution<double> max_wait_time_dist;
-  std::exponential_distribution<double> arrival_interval_dist;
-  std::exponential_distribution<double> service_time_dist;
+  std::uniform_real_distribution<> max_wait_time_dist;
+  std::exponential_distribution<> arrival_interval_dist;
+  std::exponential_distribution<> service_time_dist;
   std::default_random_engine gen;
 };
 
@@ -54,9 +54,9 @@ int main() {
   config conf{
       .n_customers = 5,
       .counters = resource{sim, 1},
-      .max_wait_time_dist = std::uniform_real_distribution<double>{1., 3.},
-      .arrival_interval_dist = std::exponential_distribution<double>{1. / 10},
-      .service_time_dist = std::exponential_distribution<double>{1. / 12},
+      .max_wait_time_dist = std::uniform_real_distribution<>{1., 3.},
+      .arrival_interval_dist = std::exponential_distribution<>{1. / 10},
+      .service_time_dist = std::exponential_distribution<>{1. / 12},
       .gen = std::default_random_engine{rd()},
   };
 
