@@ -11,32 +11,29 @@
 
 struct config {
   int n_customers;
-  double mean_arrival_interval;
-  double max_wait_time;
-  double mean_service_time;
   resource counters;
+  std::uniform_real_distribution<double> max_wait_time_dist;
+  std::exponential_distribution<double> arrival_interval_dist;
+  std::exponential_distribution<double> service_time_dist;
   std::default_random_engine gen;
-  std::exponential_distribution<double> exp_dist;
 };
 
 simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
   printf("[%5.1f] Customer %d arrives\n", sim.now(), id);
 
   auto request = conf.counters.request();
-  // internal compiler error when directly awaiting return value of sim.any_of
-  auto any_of = sim.any_of({request, sim.timeout(conf.max_wait_time)});
-  co_await any_of;
+  auto max_wait_time = conf.max_wait_time_dist(conf.gen);
+  co_await(request | sim.timeout(max_wait_time));
 
   if (!request.triggered()) {
     request.abort();
-    printf("[%5.1f] Customer %d leaves unhappy\n", sim.now(), id);
+    printf("[%5.1f] Customer %d RENEGES\n", sim.now(), id);
     co_return;
   }
 
   printf("[%5.1f] Customer %d gets to the counter\n", sim.now(), id);
 
-  auto service_time = conf.exp_dist(conf.gen) * conf.mean_service_time;
-  co_await sim.timeout(service_time);
+  co_await sim.timeout(conf.service_time_dist(conf.gen));
 
   printf("[%5.1f] Customer %d leaves\n", sim.now(), id);
   conf.counters.release();
@@ -45,7 +42,8 @@ simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
 simcpp20::event customer_source(simcpp20::simulation &sim, config &conf) {
   for (int id = 1; id <= conf.n_customers; ++id) {
     auto proc = customer(sim, conf, id);
-    co_await sim.timeout(conf.exp_dist(conf.gen) * conf.mean_arrival_interval);
+
+    co_await sim.timeout(conf.arrival_interval_dist(conf.gen));
   }
 }
 
@@ -54,13 +52,12 @@ int main() {
 
   std::random_device rd;
   config conf{
-      .n_customers = 10,
-      .mean_arrival_interval = 10,
-      .max_wait_time = 16,
-      .mean_service_time = 12,
+      .n_customers = 5,
       .counters = resource{sim, 1},
+      .max_wait_time_dist = std::uniform_real_distribution<double>{1., 3.},
+      .arrival_interval_dist = std::exponential_distribution<double>{1. / 10},
+      .service_time_dist = std::exponential_distribution<double>{1. / 12},
       .gen = std::default_random_engine{rd()},
-      .exp_dist = std::exponential_distribution{},
   };
 
   customer_source(sim, conf);

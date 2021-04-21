@@ -1,7 +1,7 @@
 set(Targets
     all_of
     any_of
-    bank
+    bank_renege
     carwash
     clocks
     machine_shop
