@@ -61,8 +61,21 @@ public:
      * arguments are ignored.
      * @param sim Reference to the simulation.
      */
-    template <typename... Args>
+    template <class... Args>
     explicit promise_type(simulation &sim, Args &&...) : sim{sim}, ev{sim} {}
+
+    /**
+     * Construct a new promise type instance.
+     *
+     * @tparam Class Class instance if the process function is a lambda or a
+     * member function of a class.
+     * @tparam Args Additional arguments passed to the process function. These
+     * arguments are ignored.
+     * @param sim Reference to the simulation.
+     */
+    template <class Class, class... Args>
+    explicit promise_type(Class &&, simulation &sim, Args &&...)
+        : sim{sim}, ev{sim} {}
 
     /// @return Event which will be triggered when the process finishes.
     value_event<T> get_return_object() const { return ev; }
