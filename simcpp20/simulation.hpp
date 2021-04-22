@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include <cassert>    // assert
 #include <cstdint>    // uint64_t
 #include <functional> // std::greater
+#include <memory>     // std::make_shared
 #include <queue>      // std::priority_queue
 #include <vector>     // std::vector
 

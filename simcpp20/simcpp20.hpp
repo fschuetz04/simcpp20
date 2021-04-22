@@ -3,6 +3,4 @@
 
 #pragma once
 
-#include "event.hpp"
 #include "simulation.hpp"
-#include "value_event.hpp"

@@ -8,8 +8,6 @@
 #include <memory>    // std::make_shared, std::shared_ptr
 #include <optional>  // std::optional
 
-#include "event.hpp"
-
 namespace simcpp20 {
 /**
  * Can be awaited by processes and contains a value after it is triggered.
