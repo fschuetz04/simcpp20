@@ -13,7 +13,6 @@ simcpp20::event<> process(simcpp20::simulation<> &sim) {
 
   // sim.event() will never be triggered -> the resulting event will never
   // be triggered too
-  // TODO(fschuetz04): memory leak
   co_await(sim.timeout(1) & sim.event());
   printf("[%.0f] 3\n", sim.now());
 }
