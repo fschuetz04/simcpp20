@@ -75,13 +75,15 @@ include(FetchContent)
 
 FetchContent_Declare(SimCpp20
     GIT_REPOSITORY https://github.com/fschuetz04/simcpp20
-    GIT_TAG        5a14ec439ac6e367d3169b0a370d68659942c12b) # v0.1.0
+    GIT_TAG        5f0ee5a6b52bcde24fea5da4cfa4054eb761904c) # v0.1.0
 
 FetchContent_MakeAvailable(SimCpp20)
 
 add_executable(app app.cpp)
 target_link_libraries(app PRIVATE simcpp20)
 ```
+
+Replace the commit hash with the latest commit hash of SimCpp20 accordingly.
 
 ## Copyright and License
 
