@@ -77,6 +77,14 @@ public:
     explicit promise_type(Class &&, simulation &sim, Args &&...)
         : sim{sim}, ev{sim} {}
 
+#ifdef __INTELLISENSE__
+    /**
+     * Fix IntelliSense complaining about missing default constructor for the
+     * promise type.
+     */
+    promise_type();
+#endif
+
     /// @return Event which will be triggered when the process finishes.
     value_event<T> get_return_object() const { return ev; }
 
