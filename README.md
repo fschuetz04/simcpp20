@@ -6,8 +6,6 @@ It is similar to SimPy and aims to be easy to set up and use.
 Processes are defined as functions receiving `simcpp20::simulation &` as their first argument and returning `simcpp20::event`.
 Each process is executed as a coroutine.
 Thus, this framework requires C++20.
-To compile a simulation, use `g++ -Wall -std=c++20 -fcoroutines example.cpp simcpp20.cpp -o example`.
-For this to work, `g++` must be on version 10 (you can try `g++-10` too).
 A short example simulating two clocks ticking in different time intervals looks like this:
 
 ```c++
@@ -45,8 +43,10 @@ When run, the following output is generated:
 [4] fast
 ```
 
+Other examples can be found in the `examples/` folder.
+
 This project uses CMake.
-To build and execute the example, run the following commands:
+To build and execute the clocks example, run the following commands:
 
 ```shell
 mkdir build
@@ -56,18 +56,12 @@ cmake --build .
 examples/clocks
 ```
 
-Currently, the CMake files only support GCC with a minimum version of 10.
-If version 10 of GCC later is available under a different name (for example `g++-10`), you can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
-If you do not want to use CMake, you can use the GCC directly:
-
-```shell
-g++ -std=c++20 -fcoroutines -Isimcpp20 simcpp20/*.cpp examples/clocks.cpp -o example_clocks
-./example_clocks
-```
-
-Again, you can try using `g++-10` instead.
-
-More examples can be found in the `examples/` folder.
+The CMake configuration has been tested with GCC and MSVC.
+When using a GCC compiler, it must be of version 10 or later.
+If such a version is available under a different name (for example `g++-10`), you can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
+When using an MSVC compiler, it must be of version 19.28 or later (Visual Studio 2019 version 16.8 or later).
+Clang probably does not work, since its coroutine implementation is contained in the `std::experimental` namespace.
+Contributions to improve compiler support are welcome!
 
 If you want to use SimCpp20 in your project, the easiest option is to use CMake with FetchContent.
 A simple configuration looks like this:
