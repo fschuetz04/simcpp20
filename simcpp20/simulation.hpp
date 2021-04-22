@@ -29,7 +29,7 @@ using id_type = uint64_t;
 template <class TTime = double> class simulation {
 public:
   /// @return Pending event.
-  event_alias<TTime> event() { return event_alias{*this}; }
+  event_alias<TTime> event() { return event_alias<TTime>{*this}; }
 
   /**
    * @tparam TValue Value type of the event.

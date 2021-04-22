@@ -19,6 +19,26 @@ simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
 TEST_CASE("boolean logic") {
   simcpp20::simulation<> sim;
 
+  SECTION("any_of is not triggered when all events are never processed") {
+    auto ev = sim.any_of({sim.event(), sim.event()});
+    bool finished = false;
+    awaiter(sim, ev, -1, finished);
+
+    sim.run();
+
+    REQUIRE(!finished);
+  }
+
+  SECTION("all_of is not triggered when one event is never processed") {
+    auto ev = sim.all_of({sim.timeout(1), sim.event()});
+    bool finished = false;
+    awaiter(sim, ev, -1, finished);
+
+    sim.run();
+
+    REQUIRE(!finished);
+  }
+
   double a = GENERATE(1, 2);
   auto ev_a = sim.timeout(a);
   auto ev_b = sim.timeout(3 - a);

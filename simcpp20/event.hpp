@@ -125,7 +125,7 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator|(const event &other) const {
+  event<TTime> operator|(const event<TTime> &other) const {
     return shared->sim.any_of({*this, other});
   }
 
@@ -136,7 +136,7 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator&(const event &other) const {
+  event<TTime> operator&(const event<TTime> &other) const {
     return shared->sim.all_of({*this, other});
   }
 
@@ -176,14 +176,14 @@ public:
 #endif
 
     /// @return Event which will be triggered when the process finishes.
-    event get_return_object() const { return ev; }
+    event<TTime> get_return_object() const { return ev; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event initial_suspend() const { return sim.timeout(TTime{0}); }
+    event<TTime> initial_suspend() const { return sim.timeout(TTime{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
@@ -199,7 +199,7 @@ public:
     simulation<TTime> &sim;
 
     /// Underlying event which is triggered when the process finishes.
-    const event ev;
+    const event<TTime> ev;
   };
 
 private:
@@ -251,13 +251,13 @@ private:
   class data {
   public:
     /// State of the event.
-    event::state state = event::state::pending;
+    event<TTime>::state state = event<TTime>::state::pending;
 
     /// Coroutine handles of processes waiting for this event.
     std::vector<std::coroutine_handle<>> handles{};
 
     /// Callbacks for this event.
-    std::vector<std::function<void(const event &)>> cbs{};
+    std::vector<std::function<void(const event<TTime> &)>> cbs{};
 
     /// Reference to the simulation.
     simulation<TTime> &sim;
@@ -276,7 +276,7 @@ private:
   /// Shared data of the event.
   std::shared_ptr<data> shared;
 
-  /// The simulation needs access to event::process.
+  /// The simulation needs access to event<TTime>::process.
   friend class simulation<TTime>;
 };
 
