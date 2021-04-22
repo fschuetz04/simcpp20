@@ -3,23 +3,29 @@
 
 #pragma once
 
+#include <cassert>    // assert
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <functional> // std::function
 #include <memory>     // std::make_shared, std::shared_ptr
 #include <vector>     // std::vector
 
 namespace simcpp20 {
-class simulation;
+template <class TTime> class simulation;
 
-/// Can be awaited by processes.
-class event {
+/**
+ * Can be awaited by processes.
+ *
+ * @tparam TTime Type used for simulation time.
+ */
+template <class TTime = double> class event {
 public:
   /**
    * Construct a new pending event.
    *
    * @param simulation Reference to simulation.
    */
-  explicit event(simulation &sim);
+  explicit event(simulation<TTime> &sim)
+      : shared{std::make_shared<data>(sim)} {}
 
   /**
    * Set the event state to triggered and schedule it to be processed
@@ -28,9 +34,15 @@ public:
    * If the event is not pending, nothing is done.
    *
    * TODO(fschuetz04): Check whether used on a process?
-   * TODO(fschuetz04): trigger_delayed()?
    */
-  void trigger() const;
+  void trigger() const {
+    if (!pending()) {
+      return;
+    }
+
+    shared->sim.schedule(*this);
+    shared->state = state::triggered;
+  }
 
   /**
    * Set the event state to aborted and destroy all coroutines waiting for it.
@@ -40,42 +52,71 @@ public:
    * TODO(fschuetz04): Check whether used on a process? Destroy process
    * coroutine?
    */
-  void abort() const;
+  void abort() const {
+    if (!pending()) {
+      return;
+    }
+
+    shared->state = state::aborted;
+
+    for (auto &handle : shared->handles) {
+      handle.destroy();
+    }
+    shared->handles.clear();
+
+    shared->cbs.clear();
+  }
 
   /**
    * Add a callback to the event to be called when the event is processed.
    *
    * @param cb Callback to add to the event.
    */
-  void add_callback(std::function<void(const event &)> cb) const;
+  void add_callback(std::function<void(const event<TTime> &)> cb) const {
+    if (processed() || aborted()) {
+      return;
+    }
+
+    shared->cbs.emplace_back(cb);
+  }
 
   /// @return Whether the event is pending.
-  bool pending() const;
+  bool pending() const { return shared->state == state::pending; }
 
   /// @return Whether the event is triggered or processed.
-  bool triggered() const;
+  bool triggered() const {
+    return shared->state == state::triggered || processed();
+  }
 
   /// @return Whether the event is processed.
-  bool processed() const;
+  bool processed() const { return shared->state == state::processed; }
 
   /// @return Whether the event is aborted.
-  bool aborted() const;
+  bool aborted() const { return shared->state == state::aborted; }
 
   /**
    * @return Whether the event is already processed and a waiting coroutine must
    * not be paused.
    */
-  bool await_ready() const;
+  bool await_ready() const { return processed(); }
 
   /**
    * Resume a waiting coroutine when the event is processed.
    *
    * @param handle Handle of the waiting coroutine.
    */
-  void await_suspend(std::coroutine_handle<> handle);
+  void await_suspend(std::coroutine_handle<> handle) {
+    assert(!processed());
+
+    if (!aborted() && !processed()) {
+      shared->handles.push_back(handle);
+    }
+
+    shared = nullptr;
+  }
 
   /// No-op.
-  void await_resume() const;
+  void await_resume() const {}
 
   /**
    * Alias for sim.any_of. Create a pending event which is triggered when this
@@ -84,7 +125,9 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator|(const event &other) const;
+  event operator|(const event &other) const {
+    return shared->sim.any_of({*this, other});
+  }
 
   /**
    * Alias for sim.all_of. Create a pending event which is triggered when this
@@ -93,10 +136,71 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event operator&(const event &other) const;
+  event operator&(const event &other) const {
+    return shared->sim.all_of({*this, other});
+  }
 
   /// Promise type for process coroutines.
-  class promise_type;
+  class promise_type {
+  public:
+    /**
+     * Construct a new promise type instance.
+     *
+     * @tparam TArgs Additional arguments passed to the process function. These
+     * arguments are ignored.
+     * @param sim Reference to the simulation.
+     */
+    template <class... TArgs>
+    explicit promise_type(simulation<TTime> &sim, TArgs &&...)
+        : sim{sim}, ev{sim} {}
+
+    /**
+     * Construct a new promise type instance.
+     *
+     * @tparam TClass Class instance if the process function is a lambda or a
+     * member function of a class.
+     * @tparam TArgs Additional arguments passed to the process function. These
+     * arguments are ignored.
+     * @param sim Reference to the simulation.
+     */
+    template <class TClass, class... TArgs>
+    explicit promise_type(TClass &&, simulation<TTime> &sim, TArgs &&...)
+        : sim{sim}, ev{sim} {}
+
+#ifdef __INTELLISENSE__
+    /**
+     * Fix IntelliSense complaining about missing default constructor for the
+     * promise type.
+     */
+    promise_type();
+#endif
+
+    /// @return Event which will be triggered when the process finishes.
+    event get_return_object() const { return ev; }
+
+    /**
+     * Register the process to be started immediately via an initial event.
+     *
+     * @return Initial event.
+     */
+    event initial_suspend() const { return sim.timeout(TTime{0}); }
+
+    /// @return Awaitable which is always ready.
+    std::suspend_never final_suspend() const noexcept { return {}; }
+
+    /// No-op.
+    void unhandled_exception() const {}
+
+    /// Trigger the underlying event since the process finished.
+    void return_void() const { ev.trigger(); }
+
+  private:
+    /// Refernece to the simulation.
+    simulation<TTime> &sim;
+
+    /// Underlying event which is triggered when the process finishes.
+    const event ev;
+  };
 
 private:
   /**
@@ -105,7 +209,23 @@ private:
    * Set the event state to processed. Call all callbacks for this event.
    * Resume all coroutines waiting for this event.
    */
-  void process() const;
+  void process() const {
+    if (processed() || aborted()) {
+      return;
+    }
+
+    shared->state = state::processed;
+
+    for (auto &handle : shared->handles) {
+      handle.resume();
+    }
+    shared->handles.clear();
+
+    for (auto &cb : shared->cbs) {
+      cb(*this);
+    }
+    shared->cbs.clear();
+  }
 
   /// State of an event.
   enum class state {
@@ -140,80 +260,24 @@ private:
     std::vector<std::function<void(const event &)>> cbs{};
 
     /// Reference to the simulation.
-    simulation &sim;
+    simulation<TTime> &sim;
 
     /// Construct a new shared data instance.
-    explicit data(simulation &sim);
+    explicit data(simulation<TTime> &sim) : sim{sim} {}
 
     /// Destroy all coroutines still waiting for the event.
-    ~data();
+    ~data() {
+      for (auto &handle : handles) {
+        handle.destroy();
+      }
+    }
   };
 
   /// Shared data of the event.
   std::shared_ptr<data> shared;
 
   /// The simulation needs access to event::process.
-  friend class simulation;
+  friend class simulation<TTime>;
 };
 
-/// Promise type for process coroutines.
-class event::promise_type {
-public:
-  /**
-   * Construct a new promise type instance.
-   *
-   * @tparam Args Additional arguments passed to the process function. These
-   * arguments are ignored.
-   * @param sim Reference to the simulation.
-   */
-  template <class... Args>
-  explicit promise_type(simulation &sim, Args &&...) : sim{sim}, ev{sim} {}
-
-  /**
-   * Construct a new promise type instance.
-   *
-   * @tparam Class Class instance if the process function is a lambda or a
-   * member function of a class.
-   * @tparam Args Additional arguments passed to the process function. These
-   * arguments are ignored.
-   * @param sim Reference to the simulation.
-   */
-  template <class Class, class... Args>
-  explicit promise_type(Class &&, simulation &sim, Args &&...)
-      : sim{sim}, ev{sim} {}
-
-#ifdef __INTELLISENSE__
-  /**
-   * Fix IntelliSense complaining about missing default constructor for the
-   * promise type.
-   */
-  promise_type();
-#endif
-
-  /// @return Event which will be triggered when the process finishes.
-  event get_return_object() const;
-
-  /**
-   * Register the process to be started immediately via an initial event.
-   *
-   * @return Initial event.
-   */
-  event initial_suspend() const;
-
-  /// @return Awaitable which is always ready.
-  std::suspend_never final_suspend() const noexcept;
-
-  /// No-op.
-  void unhandled_exception() const;
-
-  /// Trigger the underlying event since the process finished.
-  void return_void() const;
-
-private:
-  /// Refernece to the simulation.
-  simulation &sim;
-
-  /// Underlying event which is triggered when the process finishes.
-  const event ev;
-};
 } // namespace simcpp20

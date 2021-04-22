@@ -18,7 +18,7 @@ struct config {
   std::default_random_engine gen;
 };
 
-simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
+simcpp20::event<> customer(simcpp20::simulation<> &sim, config &conf, int id) {
   printf("[%5.1f] Customer %d arrives\n", sim.now(), id);
 
   auto request = conf.counters.request();
@@ -39,7 +39,7 @@ simcpp20::event customer(simcpp20::simulation &sim, config &conf, int id) {
   conf.counters.release();
 }
 
-simcpp20::event customer_source(simcpp20::simulation &sim, config &conf) {
+simcpp20::event<> customer_source(simcpp20::simulation<> &sim, config &conf) {
   for (int id = 1; id <= conf.n_customers; ++id) {
     auto proc = customer(sim, conf, id);
 
@@ -48,7 +48,7 @@ simcpp20::event customer_source(simcpp20::simulation &sim, config &conf) {
 }
 
 int main() {
-  simcpp20::simulation sim;
+  simcpp20::simulation<> sim;
 
   std::random_device rd;
   config conf{

@@ -8,8 +8,8 @@
 #include "catch2/generators/catch_generators.hpp"
 #include "simcpp20.hpp"
 
-simcpp20::event awaiter(simcpp20::simulation &sim, simcpp20::event ev,
-                        double target, bool &finished) {
+simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
+                          double target, bool &finished) {
   REQUIRE(sim.now() == 0);
   co_await ev;
   REQUIRE(sim.now() == target);
@@ -17,7 +17,7 @@ simcpp20::event awaiter(simcpp20::simulation &sim, simcpp20::event ev,
 };
 
 TEST_CASE("boolean logic") {
-  simcpp20::simulation sim;
+  simcpp20::simulation<> sim;
 
   double a = GENERATE(1, 2);
   auto ev_a = sim.timeout(a);

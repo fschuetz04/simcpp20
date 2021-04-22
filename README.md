@@ -3,7 +3,7 @@
 SimCpp20 is a discrete-event simulation framework for C++20.
 It is similar to SimPy and aims to be easy to set up and use.
 
-Processes are defined as functions receiving `simcpp20::simulation &` as their first argument and returning `simcpp20::event`.
+Processes are defined as functions receiving `simcpp20::simulation<> &` as their first argument and returning `simcpp20::event<>`.
 Each process is executed as a coroutine.
 Thus, this framework requires C++20.
 A short example simulating two clocks ticking in different time intervals looks like this:
@@ -13,8 +13,8 @@ A short example simulating two clocks ticking in different time intervals looks 
 
 #include "simcpp20.hpp"
 
-simcpp20::event clock_proc(simcpp20::simulation &sim, char const *name,
-                           double delay) {
+simcpp20::event<> clock_proc(simcpp20::simulation<> &sim, char const *name,
+                             double delay) {
   while (true) {
     printf("[%.0f] %s\n", sim.now(), name);
     co_await sim.timeout(delay);
@@ -22,12 +22,11 @@ simcpp20::event clock_proc(simcpp20::simulation &sim, char const *name,
 }
 
 int main() {
-  simcpp20::simulation sim;
+  simcpp20::simulation<> sim;
   clock_proc(sim, "slow", 2);
   clock_proc(sim, "fast", 1);
   sim.run_until(5);
 }
-
 ```
 
 When run, the following output is generated:

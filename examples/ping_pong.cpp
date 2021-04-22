@@ -11,8 +11,8 @@ struct ev_type {
   ev_inner ev;
 };
 
-simcpp20::event party(simcpp20::simulation &sim, const char *name,
-                      simcpp20::value_event<ev_type> my_event, double delay) {
+simcpp20::event<> party(simcpp20::simulation<> &sim, const char *name,
+                        simcpp20::value_event<ev_type> my_event, double delay) {
   while (true) {
     auto their_event = (co_await my_event).ev;
     printf("[%.0f] %s\n", sim.now(), name);
@@ -23,7 +23,7 @@ simcpp20::event party(simcpp20::simulation &sim, const char *name,
 }
 
 int main() {
-  simcpp20::simulation sim;
+  simcpp20::simulation<> sim;
   auto pong_event = sim.event<ev_type>();
   auto ping_event = sim.timeout<ev_type>(0, {.ev = pong_event});
   party(sim, "ping", ping_event, 1);
