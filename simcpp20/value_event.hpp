@@ -93,9 +93,6 @@ public:
     /// No-op.
     void unhandled_exception() const {}
 
-    /// No-op. Should never be called.
-    void return_void() const { assert(false); }
-
     /// Trigger the underlying event since the process finished.
     void return_value(T value) const { ev.trigger(value); }
 
