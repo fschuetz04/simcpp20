@@ -10,4 +10,10 @@ target_link_libraries(tests PRIVATE
   simcpp20
   Catch2::Catch2WithMain)
 
+if(MSVC)
+  target_compile_options(tests PRIVATE /W4)
+else()
+  target_compile_options(tests PRIVATE -Wall -Wextra)
+endif()
+
 add_test(tests tests)
