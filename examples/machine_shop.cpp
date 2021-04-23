@@ -60,8 +60,8 @@ private:
     }
   }
 
-  simcpp20::event<> failure;
   config &conf;
+  simcpp20::event<> failure;
 };
 
 int main() {
@@ -87,7 +87,7 @@ int main() {
   sim.run_until(n_weeks * 7 * 24 * 60);
 
   printf("Machine shop results after %d weeks:\n", n_weeks);
-  for (int i = 0; i < machines.size(); ++i) {
+  for (int i = 0; i < n_machines; ++i) {
     printf("- Machine %d made %d parts\n", i, machines[i].n_parts_made);
   }
 }
