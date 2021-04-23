@@ -157,6 +157,8 @@ public:
     /**
      * Construct a new promise type instance.
      *
+     * TODO(fschuetz04): Search for sim in the class instance?
+     *
      * @tparam TClass Class instance if the process function is a lambda or a
      * member function of a class.
      * @tparam TArgs Additional arguments passed to the process function. These
