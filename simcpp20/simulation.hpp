@@ -82,7 +82,8 @@ public:
     auto any_of_ev = event();
 
     for (const auto &ev : evs) {
-      ev.add_callback([any_of_ev](auto) mutable { any_of_ev.trigger(); });
+      ev.add_callback(
+          [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
     }
 
     return any_of_ev;
@@ -114,7 +115,7 @@ public:
     auto n_ptr = std::make_shared<int>(n);
 
     for (const auto &ev : evs) {
-      ev.add_callback([all_of_ev, n_ptr](auto) mutable {
+      ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
         --*n_ptr;
         if (*n_ptr == 0) {
           all_of_ev.trigger();
