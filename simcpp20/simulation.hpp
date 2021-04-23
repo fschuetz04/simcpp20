@@ -99,7 +99,7 @@ public:
    * @return Created event.
    */
   event_alias<TTime> all_of(std::vector<event_alias<TTime>> evs) {
-    int n = evs.size();
+    size_t n = evs.size();
 
     for (const auto &ev : evs) {
       if (ev.processed()) {
@@ -112,7 +112,7 @@ public:
     }
 
     auto all_of_ev = event();
-    auto n_ptr = std::make_shared<int>(n);
+    auto n_ptr = std::make_shared<size_t>(n);
 
     for (const auto &ev : evs) {
       ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {

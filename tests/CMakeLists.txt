@@ -10,9 +10,7 @@ target_link_libraries(tests PRIVATE
   simcpp20
   Catch2::Catch2WithMain)
 
-if(MSVC)
-  target_compile_options(tests PRIVATE /W4)
-else()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(tests PRIVATE -Wall -Wextra)
 endif()
 
