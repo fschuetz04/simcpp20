@@ -9,3 +9,5 @@ add_executable(tests tests.cpp)
 target_link_libraries(tests PRIVATE
   simcpp20
   Catch2::Catch2WithMain)
+
+add_test(tests tests)

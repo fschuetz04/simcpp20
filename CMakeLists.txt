@@ -16,7 +16,9 @@ project(SimCpp20
 
 add_subdirectory(simcpp20)
 
+# TODO add option to enable tests
 if(NOT SimCpp20IsSubproject)
-    add_subdirectory(examples)
-    add_subdirectory(tests)
+  enable_testing()
+  add_subdirectory(tests)
+  add_subdirectory(examples)
 endif()
