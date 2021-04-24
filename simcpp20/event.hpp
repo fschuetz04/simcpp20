@@ -157,10 +157,8 @@ public:
     /**
      * Construct a new promise type instance.
      *
-     * TODO(fschuetz04): Search for sim in the class instance?
-     *
      * @tparam TClass Class instance if the process function is a lambda or a
-     * member function of a class.
+     * member function of a class. This argument is ignored.
      * @tparam TArgs Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param sim Reference to the simulation.
@@ -168,6 +166,19 @@ public:
     template <class TClass, class... TArgs>
     explicit promise_type(TClass &&, simulation<TTime> &sim, TArgs &&...)
         : sim{sim}, ev{sim} {}
+
+    /**
+     * Construct a new promise type instance.
+     *
+     * @tparam TClass Class instance if the process function is a lambda or a
+     * member function of a class. Must contain a member variable sim
+     * referencing the simulation.
+     * @tparam TArgs Additional arguments passed to the process function. These
+     * arguments are ignored.
+     * @param c Class instance.
+     */
+    template <class TClass, class... TArgs>
+    explicit promise_type(TClass &&c, TArgs &&...) : sim{c.sim}, ev{c.sim} {}
 
 #ifdef __INTELLISENSE__
     /**

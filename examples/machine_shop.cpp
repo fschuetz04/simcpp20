@@ -20,15 +20,16 @@ struct config {
 class machine {
 public:
   machine(simcpp20::simulation<> &sim, config &conf)
-      : conf{conf}, failure{sim.event()} {
-    produce(sim);
-    fail(sim);
+      : sim{sim}, conf{conf}, failure{sim.event()} {
+    produce();
+    fail();
   }
 
   int n_parts_made = 0;
+  simcpp20::simulation<> &sim;
 
 private:
-  simcpp20::event<> produce(simcpp20::simulation<> &sim) {
+  simcpp20::event<> produce() {
     while (true) {
       double time_for_part = conf.time_for_part_dist(conf.gen);
 
@@ -52,7 +53,7 @@ private:
     }
   }
 
-  simcpp20::event<> fail(simcpp20::simulation<> &sim) {
+  simcpp20::event<> fail() {
     while (true) {
       co_await sim.timeout(conf.time_to_failure_dist(conf.gen));
       failure.trigger();
