@@ -24,8 +24,7 @@ public:
    *
    * @param simulation Reference to simulation.
    */
-  explicit event(simulation<TTime> &sim)
-      : shared{std::make_shared<data>(sim)} {}
+  explicit event(simulation<TTime> &sim) : data_{std::make_shared<data>(sim)} {}
 
   /**
    * Set the event state to triggered and schedule it to be processed
@@ -40,8 +39,8 @@ public:
       return;
     }
 
-    shared->sim.schedule(*this);
-    shared->state = state::triggered;
+    data_->sim.schedule(*this);
+    data_->state_ = state::triggered;
   }
 
   /**
@@ -57,14 +56,14 @@ public:
       return;
     }
 
-    shared->state = state::aborted;
+    data_->state_ = state::aborted;
 
-    for (auto &handle : shared->handles) {
+    for (auto &handle : data_->handles) {
       handle.destroy();
     }
-    shared->handles.clear();
+    data_->handles.clear();
 
-    shared->cbs.clear();
+    data_->cbs.clear();
   }
 
   /**
@@ -77,22 +76,22 @@ public:
       return;
     }
 
-    shared->cbs.emplace_back(cb);
+    data_->cbs.emplace_back(cb);
   }
 
   /// @return Whether the event is pending.
-  bool pending() const { return shared->state == state::pending; }
+  bool pending() const { return data_->state_ == state::pending; }
 
   /// @return Whether the event is triggered or processed.
   bool triggered() const {
-    return shared->state == state::triggered || processed();
+    return data_->state_ == state::triggered || processed();
   }
 
   /// @return Whether the event is processed.
-  bool processed() const { return shared->state == state::processed; }
+  bool processed() const { return data_->state_ == state::processed; }
 
   /// @return Whether the event is aborted.
-  bool aborted() const { return shared->state == state::aborted; }
+  bool aborted() const { return data_->state_ == state::aborted; }
 
   /**
    * @return Whether the event is already processed and a waiting coroutine must
@@ -109,10 +108,10 @@ public:
     assert(!processed());
 
     if (!aborted() && !processed()) {
-      shared->handles.push_back(handle);
+      data_->handles.push_back(handle);
     }
 
-    shared = nullptr;
+    data_ = nullptr;
   }
 
   /// No-op.
@@ -126,7 +125,7 @@ public:
    * @return Created event.
    */
   event<TTime> operator|(const event<TTime> &other) const {
-    return shared->sim.any_of({*this, other});
+    return data_->sim.any_of({*this, other});
   }
 
   /**
@@ -137,7 +136,7 @@ public:
    * @return Created event.
    */
   event<TTime> operator&(const event<TTime> &other) const {
-    return shared->sim.all_of({*this, other});
+    return data_->sim.all_of({*this, other});
   }
 
   /// Promise type for process coroutines.
@@ -227,17 +226,17 @@ private:
       return;
     }
 
-    shared->state = state::processed;
+    data_->state_ = state::processed;
 
-    for (auto &handle : shared->handles) {
+    for (auto &handle : data_->handles) {
       handle.resume();
     }
-    shared->handles.clear();
+    data_->handles.clear();
 
-    for (auto &cb : shared->cbs) {
+    for (auto &cb : data_->cbs) {
       cb(*this);
     }
-    shared->cbs.clear();
+    data_->cbs.clear();
   }
 
   /// State of an event.
@@ -274,7 +273,7 @@ private:
     }
 
     /// State of the event.
-    event<TTime>::state state = event<TTime>::state::pending;
+    state state_ = state::pending;
 
     /// Coroutine handles of processes waiting for this event.
     std::vector<std::coroutine_handle<>> handles{};
@@ -287,7 +286,7 @@ private:
   };
 
   /// Shared data of the event.
-  std::shared_ptr<data> shared;
+  std::shared_ptr<data> data_;
 
   /// The simulation needs access to event<TTime>::process.
   friend class simulation<TTime>;
