@@ -28,6 +28,11 @@ using id_type = uint64_t;
  */
 template <class TTime = double> class simulation {
 public:
+  /// Destroy all coroutines of this simulation.
+  ~simulation() {
+    // TODO(fschuetz04): Destroy coroutines?
+  }
+
   /// @return Pending event.
   event_alias<TTime> event() { return event_alias<TTime>{*this}; }
 
