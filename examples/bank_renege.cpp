@@ -41,8 +41,7 @@ simcpp20::event<> customer(simcpp20::simulation<> &sim, config &conf, int id) {
 
 simcpp20::event<> customer_source(simcpp20::simulation<> &sim, config &conf) {
   for (int id = 1; id <= conf.n_customers; ++id) {
-    auto proc = customer(sim, conf, id);
-
+    customer(sim, conf, id);
     co_await sim.timeout(conf.arrival_interval_dist(conf.gen));
   }
 }
