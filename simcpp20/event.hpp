@@ -105,13 +105,18 @@ public:
    * @param handle Handle of the waiting coroutine.
    */
   void await_suspend(std::coroutine_handle<> handle) {
-    assert(!processed());
-
-    if (!aborted() && !processed()) {
-      data_->handles.push_back(handle);
+    if (processed()) {
+      assert(false);
+      handle.resume();
+      return;
     }
 
-    data_ = nullptr;
+    if (aborted()) {
+      handle.destroy();
+      return;
+    }
+
+    data_->handles.push_back(handle);
   }
 
   /// No-op.
