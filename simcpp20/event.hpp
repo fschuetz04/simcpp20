@@ -111,7 +111,7 @@ public:
       return;
     }
 
-    if (aborted()) {
+    if (aborted() || data_.use_count() == 1) {
       handle.destroy();
       return;
     }
