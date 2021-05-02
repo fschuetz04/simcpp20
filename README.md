@@ -74,7 +74,7 @@ include(FetchContent)
 
 FetchContent_Declare(SimCpp20
     GIT_REPOSITORY https://github.com/fschuetz04/simcpp20
-    GIT_TAG        5f0ee5a6b52bcde24fea5da4cfa4054eb761904c) # v0.1.0
+    GIT_TAG        14fcc81ed5577b570a067a523914ec06b3527a1f)
 
 FetchContent_MakeAvailable(SimCpp20)
 
