@@ -96,7 +96,7 @@ public:
      *
      * @return Initial event.
      */
-    event<TTime> initial_suspend() const { return sim.timeout(0); }
+    event<TTime> initial_suspend() const { return sim.timeout(TTime{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
