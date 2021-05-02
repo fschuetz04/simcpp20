@@ -263,6 +263,16 @@ private:
   /// Shared data of the event.
   class data {
   public:
+    /// Construct a new shared data instance.
+    explicit data(simulation<TTime> &sim) : sim{sim} {}
+
+    /// Destroy all coroutines still waiting for the event.
+    ~data() {
+      for (auto &handle : handles) {
+        handle.destroy();
+      }
+    }
+
     /// State of the event.
     event<TTime>::state state = event<TTime>::state::pending;
 
@@ -274,16 +284,6 @@ private:
 
     /// Reference to the simulation.
     simulation<TTime> &sim;
-
-    /// Construct a new shared data instance.
-    explicit data(simulation<TTime> &sim) : sim{sim} {}
-
-    /// Destroy all coroutines still waiting for the event.
-    ~data() {
-      for (auto &handle : handles) {
-        handle.destroy();
-      }
-    }
   };
 
   /// Shared data of the event.
