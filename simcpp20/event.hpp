@@ -190,6 +190,10 @@ public:
     return data_->sim.all_of({*this, other});
   }
 
+  bool operator==(const event<TTime> &other) const {
+    return data_ == other.data_;
+  }
+
   /// Promise type for process coroutines.
   class promise_type {
   public:
