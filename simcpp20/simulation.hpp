@@ -24,6 +24,9 @@ using id_type = uint64_t;
  *
  *     simcpp20::simulation<> sim;
  *
+ * TODO(fschuetz04): Keep list of pending events to clear them up? Own all
+ * events?
+ *
  * @tparam TTime Type used for simulation time.
  */
 template <class TTime = double> class simulation {
@@ -72,7 +75,8 @@ public:
    * Create a pending event which is triggered when any of the given events is
    * processed.
    *
-   * TODO(fschuetz04): Check behavior.
+   * TODO(fschuetz04): Check behavior. Check whether events are aborted /
+   * destroyed?
    *
    * @param evs List of events.
    * @return Created event.
@@ -102,7 +106,8 @@ public:
    * Create a pending event which is triggered when all of the given events are
    * processed.
    *
-   * TODO(fschuetz04): Check behavior.
+   * TODO(fschuetz04): Check behavior. Check whether events are aborted /
+   * destroyed?
    *
    * @param evs List of events.
    * @return Created event.
