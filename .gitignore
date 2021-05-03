@@ -1,4 +1,6 @@
 /.vs
 /.vscode
 /build
+/debug
 /out
+/release
