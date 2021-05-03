@@ -156,10 +156,14 @@ public:
     data_->handles.push_back(handle);
 
     decrement_use_count();
+    awaited = true;
   }
 
   /// Resume a process.
-  void await_resume() { data_->use_count += 1; }
+  void await_resume() {
+    data_->use_count += 1;
+    awaited = false;
+  }
 
   /**
    * Alias for sim.any_of. Create a pending event which is triggered when this
@@ -285,7 +289,7 @@ private:
 
   /// Decrement the use count and free the shared state if it reaches 0.
   void decrement_use_count() {
-    if (data_ == nullptr) {
+    if (awaited || data_ == nullptr) {
       return;
     }
 
@@ -346,6 +350,9 @@ private:
 
   /// Shared data of the event.
   data *data_;
+
+  /// Whether a coroutine is waiting for this event.
+  bool awaited = false;
 
   /// The simulation needs access to event<TTime>::process.
   friend class simulation<TTime>;
