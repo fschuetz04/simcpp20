@@ -6,7 +6,6 @@
 #include <cassert>    // assert
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <functional> // std::function
-#include <memory>     // std::make_shared, std::shared_ptr
 #include <vector>     // std::vector
 
 namespace simcpp20 {
@@ -24,7 +23,51 @@ public:
    *
    * @param simulation Reference to simulation.
    */
-  explicit event(simulation<TTime> &sim) : data_{std::make_shared<data>(sim)} {}
+  explicit event(simulation<TTime> &sim) : data_{new data(sim)} {
+    data_->use_count += 1;
+  }
+
+  /// Destruct this event.
+  ~event() { decrement_use_count(); }
+
+  /**
+   * Copy construct an event.
+   *
+   * @param other Event to copy.
+   */
+  event(const event &other) : data_{other.data_} { data_->use_count += 1; }
+
+  /**
+   * Move construct an event.
+   *
+   * @param other Event to move.
+   */
+  event(event &&other) noexcept : data_{std::exchange(other.data_, nullptr)} {}
+
+  /**
+   * Replace this event by copying.
+   *
+   * @param other Event to replace this event with.
+   * @return Reference to this event.
+   */
+  event &operator=(const event &other) {
+    decrement_use_count();
+    data_ = other.data_;
+    data_->use_count += 1;
+    return *this;
+  }
+
+  /**
+   * Replace this event by moving.
+   *
+   * @param other Event to replace this event with.
+   * @return Reference to this event.
+   */
+  event &operator=(event &&other) noexcept {
+    decrement_use_count();
+    data_ = std::exchange(other.data_, nullptr);
+    return *this;
+  }
 
   /**
    * Set the event state to triggered and schedule it to be processed
@@ -100,27 +143,23 @@ public:
   bool await_ready() const { return processed(); }
 
   /**
-   * Resume a waiting coroutine when the event is processed.
+   * Suspend a process and resume it when the event is processed.
    *
-   * @param handle Handle of the waiting coroutine.
+   * @param handle Corotuine handle of the process.
    */
   void await_suspend(std::coroutine_handle<> handle) {
-    if (processed()) {
-      assert(false);
-      handle.resume();
-      return;
-    }
-
-    if (aborted() || data_.use_count() == 1) {
+    if (aborted()) {
       handle.destroy();
       return;
     }
 
     data_->handles.push_back(handle);
+
+    decrement_use_count();
   }
 
-  /// No-op.
-  void await_resume() const {}
+  /// Resume a process.
+  void await_resume() { data_->use_count += 1; }
 
   /**
    * Alias for sim.any_of. Create a pending event which is triggered when this
@@ -244,6 +283,18 @@ private:
     data_->cbs.clear();
   }
 
+  /// Decrement the use count and free the shared state if it reaches 0.
+  void decrement_use_count() {
+    if (data_ == nullptr) {
+      return;
+    }
+
+    data_->use_count -= 1;
+    if (data_->use_count == 0) {
+      delete std::exchange(data_, nullptr);
+    }
+  }
+
   /// State of an event.
   enum class state {
     /**
@@ -277,6 +328,9 @@ private:
       }
     }
 
+    /// Use count of the event.
+    int use_count = 0;
+
     /// State of the event.
     state state_ = state::pending;
 
@@ -291,7 +345,7 @@ private:
   };
 
   /// Shared data of the event.
-  std::shared_ptr<data> data_;
+  data *data_;
 
   /// The simulation needs access to event<TTime>::process.
   friend class simulation<TTime>;
