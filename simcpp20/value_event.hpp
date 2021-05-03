@@ -45,7 +45,7 @@ public:
   }
 
   /// @return Value of the event.
-  TValue await_resume() const {
+  TValue await_resume() {
     event<TTime>::await_resume();
     return value();
   }
