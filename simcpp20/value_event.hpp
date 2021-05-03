@@ -45,7 +45,10 @@ public:
   }
 
   /// @return Value of the event.
-  TValue await_resume() const { return value(); }
+  TValue await_resume() const {
+    event<TTime>::await_resume();
+    return value();
+  }
 
   /// @return Value of the event.
   TValue value() const {
@@ -115,7 +118,7 @@ public:
     std::suspend_never final_suspend() const noexcept { return {}; }
 
     /// No-op.
-    void unhandled_exception() const {}
+    void unhandled_exception() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
     void return_value(TValue value) const { ev.trigger(value); }

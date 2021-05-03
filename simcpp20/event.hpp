@@ -7,6 +7,7 @@
 #include <cmath>      // std::log2
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <functional> // std::function
+#include <optional>   // std::optional, std::nullopt
 #include <vector>     // std::vector
 
 namespace simcpp20 {
@@ -159,13 +160,17 @@ public:
     data_->handles.push_back(handle);
 
     decrement_use_count();
-    awaited = true;
+    handle_ = handle;
   }
 
   /// Resume a process.
   void await_resume() {
     data_->use_count += 1;
-    awaited = false;
+    auto handle = std::exchange(handle_, std::nullopt);
+
+    if (handle.value().promise().ev.aborted()) {
+      throw nullptr;
+    }
   }
 
   /**
@@ -256,7 +261,7 @@ public:
     std::suspend_never final_suspend() const noexcept { return {}; }
 
     /// No-op.
-    void unhandled_exception() const {}
+    void unhandled_exception() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
     void return_void() const { ev.trigger(); }
@@ -283,11 +288,7 @@ private:
     data_->state_ = state::processed;
 
     for (auto &handle : data_->handles) {
-      if (handle.promise().ev.aborted()) {
-        handle.destroy();
-      } else {
-        handle.resume();
-      }
+      handle.resume();
     }
     data_->handles.clear();
 
@@ -299,7 +300,7 @@ private:
 
   /// Decrement the use count and free the shared state if it reaches 0.
   void decrement_use_count() {
-    if (awaited || data_ == nullptr) {
+    if (handle_.has_value() || data_ == nullptr) {
       return;
     }
 
@@ -361,8 +362,8 @@ private:
   /// Shared data of the event.
   data *data_;
 
-  /// Whether a coroutine is waiting for this event.
-  bool awaited = false;
+  /// Handle of the coroutine waiting for this event, if any.
+  std::optional<std::coroutine_handle<promise_type>> handle_ = std::nullopt;
 
   /// The simulation needs access to process.
   friend class simulation<TTime>;
