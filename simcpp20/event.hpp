@@ -18,6 +18,8 @@ template <class TTime> class simulation;
  */
 template <class TTime = double> class event {
 public:
+  class promise_type;
+
   /**
    * Construct a new pending event.
    *
@@ -147,7 +149,7 @@ public:
    *
    * @param handle Corotuine handle of the process.
    */
-  void await_suspend(std::coroutine_handle<> handle) {
+  void await_suspend(std::coroutine_handle<promise_type> handle) {
     if (aborted()) {
       handle.destroy();
       return;
@@ -254,7 +256,6 @@ public:
     /// Trigger the underlying event since the process finished.
     void return_void() const { ev.trigger(); }
 
-  private:
     /// Refernece to the simulation.
     simulation<TTime> &sim;
 
@@ -277,7 +278,11 @@ private:
     data_->state_ = state::processed;
 
     for (auto &handle : data_->handles) {
-      handle.resume();
+      if (handle.promise().ev.aborted()) {
+        handle.destroy();
+      } else {
+        handle.resume();
+      }
     }
     data_->handles.clear();
 
@@ -339,7 +344,7 @@ private:
     state state_ = state::pending;
 
     /// Coroutine handles of processes waiting for this event.
-    std::vector<std::coroutine_handle<>> handles{};
+    std::vector<std::coroutine_handle<promise_type>> handles{};
 
     /// Callbacks for this event.
     std::vector<std::function<void(const event<TTime> &)>> cbs{};
