@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cassert>    // assert
+#include <cmath>      // std::log2
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <functional> // std::function
 #include <vector>     // std::vector
@@ -359,8 +360,19 @@ private:
   /// Whether a coroutine is waiting for this event.
   bool awaited = false;
 
-  /// The simulation needs access to event<TTime>::process.
+  /// The simulation needs access to process.
   friend class simulation<TTime>;
-};
 
+  /// std::hash needs access to data_.
+  friend class std::hash<event<TTime>>;
+};
 } // namespace simcpp20
+
+namespace std {
+template <class TTime> struct hash<simcpp20::event<TTime>> {
+  size_t operator()(const simcpp20::event<TTime> &ev) const {
+    static const size_t shift = std::log2(1 + sizeof(simcpp20::event<TTime>));
+    return reinterpret_cast<size_t>(ev.data_) >> shift;
+  }
+};
+} // namespace std
