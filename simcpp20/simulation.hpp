@@ -78,6 +78,10 @@ public:
    * @return Created event.
    */
   event_alias<TTime> any_of(std::vector<event_alias<TTime>> evs) {
+    if (evs.size() == 0) {
+      return timeout(0);
+    }
+
     for (const auto &ev : evs) {
       if (ev.processed()) {
         return timeout(0);
