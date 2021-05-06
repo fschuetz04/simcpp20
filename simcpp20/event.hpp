@@ -11,14 +11,14 @@
 #include <vector>     // std::vector
 
 namespace simcpp20 {
-template <class TTime> class simulation;
+template <typename Time> class simulation;
 
 /**
  * Can be awaited by processes.
  *
- * @tparam TTime Type used for simulation time.
+ * @tparam Time Type used for simulation time.
  */
-template <class TTime = double> class event {
+template <typename Time = double> class event {
 public:
   class promise_type;
 
@@ -27,7 +27,7 @@ public:
    *
    * @param simulation Reference to simulation.
    */
-  explicit event(simulation<TTime> &sim) : data_{new data(sim)} {
+  explicit event(simulation<Time> &sim) : data_{new data(sim)} {
     data_->use_count += 1;
   }
 
@@ -118,7 +118,7 @@ public:
    *
    * @param cb Callback to add to the event.
    */
-  void add_callback(std::function<void(const event<TTime> &)> cb) const {
+  void add_callback(std::function<void(const event<Time> &)> cb) const {
     if (processed() || aborted()) {
       return;
     }
@@ -180,7 +180,7 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event<TTime> operator|(const event<TTime> &other) const {
+  event<Time> operator|(const event<Time> &other) const {
     return data_->sim.any_of({*this, other});
   }
 
@@ -191,11 +191,11 @@ public:
    * @param other Given event.
    * @return Created event.
    */
-  event<TTime> operator&(const event<TTime> &other) const {
+  event<Time> operator&(const event<Time> &other) const {
     return data_->sim.all_of({*this, other});
   }
 
-  bool operator==(const event<TTime> &other) const {
+  bool operator==(const event<Time> &other) const {
     return data_ == other.data_;
   }
 
@@ -205,39 +205,39 @@ public:
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param sim Reference to the simulation.
      */
-    template <class... TArgs>
-    explicit promise_type(simulation<TTime> &sim, TArgs &&...)
+    template <typename... Args>
+    explicit promise_type(simulation<Time> &sim, Args &&...)
         : sim{sim}, ev{sim} {}
 
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TClass Class instance if the process function is a lambda or a
+     * @tparam Class Class instance if the process function is a lambda or a
      * member function of a class. This argument is ignored.
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param sim Reference to the simulation.
      */
-    template <class TClass, class... TArgs>
-    explicit promise_type(TClass &&, simulation<TTime> &sim, TArgs &&...)
+    template <typename Class, typename... Args>
+    explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
         : sim{sim}, ev{sim} {}
 
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TClass Class instance if the process function is a lambda or a
+     * @tparam Class Class instance if the process function is a lambda or a
      * member function of a class. Must contain a member variable sim
      * referencing the simulation.
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param c Class instance.
      */
-    template <class TClass, class... TArgs>
-    explicit promise_type(TClass &&c, TArgs &&...) : sim{c.sim}, ev{c.sim} {}
+    template <typename Class, typename... Args>
+    explicit promise_type(Class &&c, Args &&...) : sim{c.sim}, ev{c.sim} {}
 
 #ifdef __INTELLISENSE__
     /**
@@ -248,14 +248,14 @@ public:
 #endif
 
     /// @return Event which will be triggered when the process finishes.
-    event<TTime> get_return_object() const { return ev; }
+    event<Time> get_return_object() const { return ev; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event<TTime> initial_suspend() const { return sim.timeout(TTime{0}); }
+    event<Time> initial_suspend() const { return sim.timeout(Time{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
@@ -267,10 +267,10 @@ public:
     void return_void() const { ev.trigger(); }
 
     /// Refernece to the simulation.
-    simulation<TTime> &sim;
+    simulation<Time> &sim;
 
     /// Underlying event which is triggered when the process finishes.
-    const event<TTime> ev;
+    const event<Time> ev;
   };
 
 private:
@@ -334,7 +334,7 @@ private:
   class data {
   public:
     /// Construct a new shared data instance.
-    explicit data(simulation<TTime> &sim) : sim{sim} {}
+    explicit data(simulation<Time> &sim) : sim{sim} {}
 
     /// Destroy all coroutines still waiting for the event.
     ~data() {
@@ -353,10 +353,10 @@ private:
     std::vector<std::coroutine_handle<promise_type>> handles{};
 
     /// Callbacks for this event.
-    std::vector<std::function<void(const event<TTime> &)>> cbs{};
+    std::vector<std::function<void(const event<Time> &)>> cbs{};
 
     /// Reference to the simulation.
-    simulation<TTime> &sim;
+    simulation<Time> &sim;
   };
 
   /// Shared data of the event.
@@ -366,17 +366,17 @@ private:
   std::optional<std::coroutine_handle<promise_type>> handle_ = std::nullopt;
 
   /// The simulation needs access to process.
-  friend class simulation<TTime>;
+  friend class simulation<Time>;
 
   /// std::hash needs access to data_.
-  friend class std::hash<event<TTime>>;
+  friend class std::hash<event<Time>>;
 };
 } // namespace simcpp20
 
 namespace std {
-template <class TTime> struct hash<simcpp20::event<TTime>> {
-  size_t operator()(const simcpp20::event<TTime> &ev) const {
-    static const size_t shift = std::log2(1 + sizeof(simcpp20::event<TTime>));
+template <typename Time> struct hash<simcpp20::event<Time>> {
+  size_t operator()(const simcpp20::event<Time> &ev) const {
+    static const size_t shift = std::log2(1 + sizeof(simcpp20::event<Time>));
     return reinterpret_cast<size_t>(ev.data_) >> shift;
   }
 };

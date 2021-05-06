@@ -12,18 +12,18 @@ namespace simcpp20 {
 /**
  * Can be awaited by processes and contains a value after it is triggered.
  *
- * @tparam TValue Type of the contained value.
- * @tparam TTime Type used for simulation time.
+ * @tparam Value Type of the contained value.
+ * @tparam Time Type used for simulation time.
  */
-template <class TValue, class TTime = double>
-class value_event : public event<TTime> {
+template <typename Value, class Time = double>
+class value_event : public event<Time> {
 public:
   /**
    * Construct a new pending value event.
    *
    * @param simulation Reference to simulation.
    */
-  explicit value_event(simulation<TTime> &sim) : event<TTime>{sim} {}
+  explicit value_event(simulation<Time> &sim) : event<Time>{sim} {}
 
   /**
    * Set the event state to triggered and schedule it to be processed
@@ -35,23 +35,23 @@ public:
    *
    * @param value Value of the event.
    */
-  void trigger(TValue value) const {
-    if (!event<TTime>::pending()) {
+  void trigger(Value value) const {
+    if (!event<Time>::pending()) {
       return;
     }
 
     *value_ = value;
-    event<TTime>::trigger();
+    event<Time>::trigger();
   }
 
   /// @return Value of the event.
-  TValue await_resume() {
-    event<TTime>::await_resume();
+  Value await_resume() {
+    event<Time>::await_resume();
     return value();
   }
 
   /// @return Value of the event.
-  TValue value() const {
+  Value value() const {
     assert(value_->has_value());
     return value_->value();
   }
@@ -62,39 +62,39 @@ public:
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param sim Reference to the simulation.
      */
-    template <class... TArgs>
-    explicit promise_type(simulation<TTime> &sim, TArgs &&...)
+    template <typename... Args>
+    explicit promise_type(simulation<Time> &sim, Args &&...)
         : sim{sim}, ev{sim} {}
 
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TClass Class instance if the process function is a lambda or a
+     * @tparam Class Class instance if the process function is a lambda or a
      * member function of a class.
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param sim Reference to the simulation.
      */
-    template <class TClass, class... TArgs>
-    explicit promise_type(TClass &&, simulation<TTime> &sim, TArgs &&...)
+    template <typename Class, typename... Args>
+    explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
         : sim{sim}, ev{sim} {}
 
     /**
      * Construct a new promise type instance.
      *
-     * @tparam TClass Class instance if the process function is a lambda or a
+     * @tparam Class Class instance if the process function is a lambda or a
      * member function of a class. Must contain a member variable sim
      * referencing the simulation.
-     * @tparam TArgs Additional arguments passed to the process function. These
+     * @tparam Args Additional arguments passed to the process function. These
      * arguments are ignored.
      * @param c Class instance.
      */
-    template <class TClass, class... TArgs>
-    explicit promise_type(TClass &&c, TArgs &&...) : sim{c.sim}, ev{c.sim} {}
+    template <typename Class, typename... Args>
+    explicit promise_type(Class &&c, Args &&...) : sim{c.sim}, ev{c.sim} {}
 
 #ifdef __INTELLISENSE__
     /**
@@ -105,14 +105,14 @@ public:
 #endif
 
     /// @return Event which will be triggered when the process finishes.
-    value_event<TValue, TTime> get_return_object() const { return ev; }
+    value_event<Value, Time> get_return_object() const { return ev; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event<TTime> initial_suspend() const { return sim.timeout(TTime{0}); }
+    event<Time> initial_suspend() const { return sim.timeout(Time{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
@@ -121,22 +121,22 @@ public:
     void unhandled_exception() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
-    void return_value(TValue value) const { ev.trigger(value); }
+    void return_value(Value value) const { ev.trigger(value); }
 
   private:
     /// Reference to the simulation.
-    simulation<TTime> &sim;
+    simulation<Time> &sim;
 
     /// Underlying event which is triggered when the process finishes.
-    const value_event<TValue, TTime> ev;
+    const value_event<Value, Time> ev;
   };
 
 private:
   /// Value of the event.
-  std::shared_ptr<std::optional<TValue>> value_ =
-      std::make_shared<std::optional<TValue>>();
+  std::shared_ptr<std::optional<Value>> value_ =
+      std::make_shared<std::optional<Value>>();
 
   /// The simulation needs access to value_event<T>::value_.
-  friend class simulation<TTime>;
+  friend class simulation<Time>;
 };
 } // namespace simcpp20

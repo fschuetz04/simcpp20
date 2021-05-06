@@ -14,7 +14,7 @@
 #include "value_event.hpp"
 
 namespace simcpp20 {
-template <class TTime = double> using event_alias = event<TTime>;
+template <typename Time = double> using event_alias = event<Time>;
 using id_type = uint64_t;
 
 /**
@@ -27,9 +27,9 @@ using id_type = uint64_t;
  * TODO(fschuetz04): Keep list of pending events to clear them up? Own all
  * events?
  *
- * @tparam TTime Type used for simulation time.
+ * @tparam Time Type used for simulation time.
  */
-template <class TTime = double> class simulation {
+template <typename Time = double> class simulation {
 public:
   /// Destroy all coroutines of this simulation.
   ~simulation() {
@@ -37,35 +37,35 @@ public:
   }
 
   /// @return Pending event.
-  event_alias<TTime> event() { return event_alias<TTime>{*this}; }
+  event_alias<Time> event() { return event_alias<Time>{*this}; }
 
   /**
-   * @tparam TValue Value type of the event.
+   * @tparam Value Value type of the event.
    * @return Pending value event.
    */
-  template <class TValue> value_event<TValue, TTime> event() {
-    return value_event<TValue, TTime>{*this};
+  template <typename Value> value_event<Value, Time> event() {
+    return value_event<Value, Time>{*this};
   }
 
   /**
    * @param delay Delay after which to process the event.
    * @return Pending event.
    */
-  event_alias<TTime> timeout(TTime delay) {
+  event_alias<Time> timeout(Time delay) {
     auto ev = event();
     schedule(ev, delay);
     return ev;
   }
 
   /**
-   * @tparam TValue Value type of the event.
+   * @tparam Value Value type of the event.
    * @param delay Delay after which to process the event.
    * @param value Value of the event.
    * @return Pending value event.
    */
-  template <class TValue>
-  value_event<TValue, TTime> timeout(TTime delay, TValue value) {
-    auto ev = event<TValue>();
+  template <typename Value>
+  value_event<Value, Time> timeout(Time delay, Value value) {
+    auto ev = event<Value>();
     *ev.value_ = value;
     schedule(ev, delay);
     return ev;
@@ -81,7 +81,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  event_alias<TTime> any_of(std::vector<event_alias<TTime>> evs) {
+  event_alias<Time> any_of(std::vector<event_alias<Time>> evs) {
     if (evs.size() == 0) {
       return timeout(0);
     }
@@ -112,7 +112,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  event_alias<TTime> all_of(std::vector<event_alias<TTime>> evs) {
+  event_alias<Time> all_of(std::vector<event_alias<Time>> evs) {
     size_t n = evs.size();
 
     for (const auto &ev : evs) {
@@ -146,8 +146,8 @@ public:
    * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
    */
-  void schedule(event_alias<TTime> ev, TTime delay = TTime{0}) {
-    if (delay < TTime{0}) {
+  void schedule(event_alias<Time> ev, Time delay = Time{0}) {
+    if (delay < Time{0}) {
       assert(false);
       return;
     }
@@ -181,7 +181,7 @@ public:
    *
    * @param target Target time.
    */
-  void run_until(TTime target) {
+  void run_until(Time target) {
     if (target < now()) {
       assert(false);
       return;
@@ -198,7 +198,7 @@ public:
   bool empty() const { return scheduled_evs.empty(); }
 
   /// @return Current simulation time.
-  TTime now() const { return now_; }
+  Time now() const { return now_; }
 
 private:
   /// One event in the event queue.
@@ -212,7 +212,7 @@ private:
      * insertion order.
      * @param ev Event to process.
      */
-    scheduled_event(TTime time, id_type id, event_alias<TTime> ev)
+    scheduled_event(Time time, id_type id, event_alias<Time> ev)
         : time_{time}, id{id}, ev_{ev} {}
 
     /**
@@ -228,14 +228,14 @@ private:
     }
 
     /// @return Time at which to process the event.
-    TTime time() const { return time_; }
+    Time time() const { return time_; }
 
     /// @return Event to process.
-    event_alias<TTime> ev() const { return ev_; }
+    event_alias<Time> ev() const { return ev_; }
 
   private:
     /// Time at which to process the event.
-    TTime time_;
+    Time time_;
 
     /**
      * Incremental ID to sort events scheduled at the same time by insertion
@@ -244,7 +244,7 @@ private:
     id_type id;
 
     /// Event to process.
-    event_alias<TTime> ev_;
+    event_alias<Time> ev_;
   };
 
   /// Event queue.
@@ -253,7 +253,7 @@ private:
       scheduled_evs{};
 
   /// Current simulation time.
-  TTime now_ = TTime{0};
+  Time now_ = Time{0};
 
   /// Next ID for scheduling an event.
   id_type next_id = 0;
