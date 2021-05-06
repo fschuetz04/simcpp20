@@ -8,7 +8,7 @@ else()
   set(MAIN_PROJECT ON)
 endif()
 
-project(SimCpp20
+project(simcpp20
   VERSION      0.1.0
   DESCRIPTION  "Discrete-event simulation in C++20 using coroutines"
   HOMEPAGE_URL "https://github.com/fschuetz04/simcpp20"
