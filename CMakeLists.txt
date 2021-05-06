@@ -3,9 +3,9 @@
 cmake_minimum_required(VERSION 3.14)
 
 if(DEFINED PROJECT_NAME)
-  set(SimCpp20IsSubproject ON)
+  set(MAIN_PROJECT OFF)
 else()
-  set(SimCpp20IsSubproject OFF)
+  set(MAIN_PROJECT ON)
 endif()
 
 project(SimCpp20
@@ -16,9 +16,13 @@ project(SimCpp20
 
 add_subdirectory(simcpp20)
 
-# TODO add option to enable tests
-if(NOT SimCpp20IsSubproject)
+option(FSCHUETZ04_SIMCPP20_BUILD_TESTS "Build tests" ${MAIN_PROJECT})
+if(FSCHUETZ04_SIMCPP20_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+option(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES "Build examples" ${MAIN_PROJECT})
+if(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()

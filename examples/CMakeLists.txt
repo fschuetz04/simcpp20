@@ -6,7 +6,7 @@ FetchContent_Declare(units
   GIT_TAG        1e2c7ed7cd8e61db7a82b8827caef7ed49b01831)
 FetchContent_MakeAvailable(units)
 
-set(Targets
+set(TARGETS
   all_of
   any_of
   bank_renege
@@ -18,12 +18,12 @@ set(Targets
   value_event
   value_process)
 
-foreach(Target ${Targets})
-  add_executable(${Target} ${Target}.cpp)
-  target_link_libraries(${Target} PRIVATE simcpp20)
+foreach(TARGET ${TARGETS})
+  add_executable(${TARGET} ${TARGET}.cpp)
+  target_link_libraries(${TARGET} PRIVATE simcpp20)
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${Target} PRIVATE -Wall -Wextra)
+    target_compile_options(${TARGET} PRIVATE -Wall -Wextra)
   endif()
 endforeach()
 
