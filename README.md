@@ -11,7 +11,7 @@ A short example simulating two clocks ticking in different time intervals looks 
 ```c++
 #include <cstdio>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::event<> clock_proc(simcpp20::simulation<> &sim, char const *name,
                              double delay) {
@@ -68,18 +68,18 @@ A simple configuration looks like this:
 ```cmake
 cmake_minimum_required(VERSION 3.14)
 
-project(MyApp)
+project(my_app)
 
 include(FetchContent)
 
-FetchContent_Declare(SimCpp20
+FetchContent_Declare(fschuetz04_simcpp20
     GIT_REPOSITORY https://github.com/fschuetz04/simcpp20
-    GIT_TAG        14fcc81ed5577b570a067a523914ec06b3527a1f)
+    GIT_TAG        14fcc81ed5577b570a067a523914ec06b3527a1f) # replace with latest revision
 
-FetchContent_MakeAvailable(SimCpp20)
+FetchContent_MakeAvailable(fschuetz04_simcpp20)
 
 add_executable(app app.cpp)
-target_link_libraries(app PRIVATE simcpp20)
+target_link_libraries(app PRIVATE fschuetz04::simcpp20)
 ```
 
 Replace the commit hash with the latest commit hash of SimCpp20 accordingly.
