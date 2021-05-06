@@ -152,8 +152,8 @@ public:
       return;
     }
 
-    scheduled_evs.emplace(now() + delay, next_id, ev);
-    ++next_id;
+    scheduled_evs_.emplace(now() + delay, next_id_, ev);
+    ++next_id_;
   }
 
   /**
@@ -162,8 +162,8 @@ public:
    * @throw When the event queue is empty.
    */
   void step() {
-    auto scheduled_ev = scheduled_evs.top();
-    scheduled_evs.pop();
+    auto scheduled_ev = scheduled_evs_.top();
+    scheduled_evs_.pop();
     now_ = scheduled_ev.time();
     scheduled_ev.ev().process();
   }
@@ -187,7 +187,7 @@ public:
       return;
     }
 
-    while (!empty() && scheduled_evs.top().time() < target) {
+    while (!empty() && scheduled_evs_.top().time() < target) {
       step();
     }
 
@@ -195,7 +195,7 @@ public:
   }
 
   /// @return Whether the event queue is empty.
-  bool empty() const { return scheduled_evs.empty(); }
+  bool empty() const { return scheduled_evs_.empty(); }
 
   /// @return Current simulation time.
   Time now() const { return now_; }
@@ -208,12 +208,12 @@ private:
      * Construct a new scheduled event.
      *
      * @param time Time at which to process the event.
-     * @param id Incremental ID to sort events scheduled at the same time by
+     * @param id_ Incremental ID to sort events scheduled at the same time by
      * insertion order.
      * @param ev Event to process.
      */
     scheduled_event(Time time, id_type id, event_alias<Time> ev)
-        : time_{time}, id{id}, ev_{ev} {}
+        : time_{time}, id_{id}, ev_{ev} {}
 
     /**
      * @param other Scheduled event to compare to.
@@ -224,7 +224,7 @@ private:
         return time() > other.time();
       }
 
-      return id > other.id;
+      return id_ > other.id_;
     }
 
     /// @return Time at which to process the event.
@@ -241,7 +241,7 @@ private:
      * Incremental ID to sort events scheduled at the same time by insertion
      * order.
      */
-    id_type id;
+    id_type id_;
 
     /// Event to process.
     event_alias<Time> ev_;
@@ -250,12 +250,12 @@ private:
   /// Event queue.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
                       std::greater<scheduled_event>>
-      scheduled_evs{};
+      scheduled_evs_{};
 
   /// Current simulation time.
   Time now_ = Time{0};
 
   /// Next ID for scheduling an event.
-  id_type next_id = 0;
+  id_type next_id_ = 0;
 };
 } // namespace simcpp20

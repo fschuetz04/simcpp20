@@ -28,7 +28,7 @@ public:
    * @param simulation Reference to simulation.
    */
   explicit event(simulation<Time> &sim) : data_{new data(sim)} {
-    data_->use_count += 1;
+    data_->use_count_ += 1;
   }
 
   /// Destruct this event.
@@ -39,7 +39,7 @@ public:
    *
    * @param other Event to copy.
    */
-  event(const event &other) : data_{other.data_} { data_->use_count += 1; }
+  event(const event &other) : data_{other.data_} { data_->use_count_ += 1; }
 
   /**
    * Move construct an event.
@@ -57,7 +57,7 @@ public:
   event &operator=(const event &other) {
     decrement_use_count();
     data_ = other.data_;
-    data_->use_count += 1;
+    data_->use_count_ += 1;
     return *this;
   }
 
@@ -86,7 +86,7 @@ public:
       return;
     }
 
-    data_->sim.schedule(*this);
+    data_->sim_.schedule(*this);
     data_->state_ = state::triggered;
   }
 
@@ -105,12 +105,12 @@ public:
 
     data_->state_ = state::aborted;
 
-    for (auto &handle : data_->handles) {
+    for (auto &handle : data_->handles_) {
       handle.destroy();
     }
-    data_->handles.clear();
+    data_->handles_.clear();
 
-    data_->cbs.clear();
+    data_->cbs_.clear();
   }
 
   /**
@@ -123,7 +123,7 @@ public:
       return;
     }
 
-    data_->cbs.emplace_back(cb);
+    data_->cbs_.emplace_back(cb);
   }
 
   /// @return Whether the event is pending.
@@ -159,15 +159,15 @@ public:
       return;
     }
 
-    data_->handles.push_back(handle);
+    data_->handles_.push_back(handle);
 
     decrement_use_count();
-    awaiting_ev_ = &handle.promise().ev;
+    awaiting_ev_ = &handle.promise().ev_;
   }
 
   /// Resume a process.
   void await_resume() {
-    data_->use_count += 1;
+    data_->use_count_ += 1;
     auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
 
     if (awaiting_ev->aborted()) {
@@ -183,7 +183,7 @@ public:
    * @return Created event.
    */
   event<Time> operator|(const event<Time> &other) const {
-    return data_->sim.any_of({*this, other});
+    return data_->sim_.any_of({*this, other});
   }
 
   /**
@@ -194,7 +194,7 @@ public:
    * @return Created event.
    */
   event<Time> operator&(const event<Time> &other) const {
-    return data_->sim.all_of({*this, other});
+    return data_->sim_.all_of({*this, other});
   }
 
   bool operator==(const event<Time> &other) const {
@@ -213,7 +213,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim{sim}, ev{sim} {}
+        : sim_{sim}, ev_{sim} {}
 
     /**
      * Construct a new promise type instance.
@@ -226,7 +226,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim{sim}, ev{sim} {}
+        : sim_{sim}, ev_{sim} {}
 
     /**
      * Construct a new promise type instance.
@@ -239,7 +239,7 @@ public:
      * @param c Class instance.
      */
     template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...) : sim{c.sim}, ev{c.sim} {}
+    explicit promise_type(Class &&c, Args &&...) : sim_{c.sim}, ev_{c.sim} {}
 
 #ifdef __INTELLISENSE__
     /**
@@ -250,14 +250,14 @@ public:
 #endif
 
     /// @return Event which will be triggered when the process finishes.
-    event<Time> get_return_object() const { return ev; }
+    event<Time> get_return_object() const { return ev_; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event<Time> initial_suspend() const { return sim.timeout(Time{0}); }
+    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
@@ -266,13 +266,13 @@ public:
     void unhandled_exception() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
-    void return_void() const { ev.trigger(); }
+    void return_void() const { ev_.trigger(); }
 
     /// Refernece to the simulation.
-    simulation<Time> &sim;
+    simulation<Time> &sim_;
 
     /// Underlying event which is triggered when the process finishes.
-    const event<Time> ev;
+    const event<Time> ev_;
   };
 
 private:
@@ -289,15 +289,15 @@ private:
 
     data_->state_ = state::processed;
 
-    for (auto &handle : data_->handles) {
+    for (auto &handle : data_->handles_) {
       handle.resume();
     }
-    data_->handles.clear();
+    data_->handles_.clear();
 
-    for (auto &cb : data_->cbs) {
+    for (auto &cb : data_->cbs_) {
       cb(*this);
     }
-    data_->cbs.clear();
+    data_->cbs_.clear();
   }
 
   /// Decrement the use count and free the shared state if it reaches 0.
@@ -306,8 +306,8 @@ private:
       return;
     }
 
-    data_->use_count -= 1;
-    if (data_->use_count == 0) {
+    data_->use_count_ -= 1;
+    if (data_->use_count_ == 0) {
       delete std::exchange(data_, nullptr);
     }
   }
@@ -336,29 +336,29 @@ private:
   class data {
   public:
     /// Construct a new shared data instance.
-    explicit data(simulation<Time> &sim) : sim{sim} {}
+    explicit data(simulation<Time> &sim) : sim_{sim} {}
 
     /// Destroy all coroutines still waiting for the event.
     ~data() {
-      for (auto &handle : handles) {
+      for (auto &handle : handles_) {
         handle.destroy();
       }
     }
 
     /// Use count of the event.
-    int use_count = 0;
+    int use_count_ = 0;
 
     /// State of the event.
     state state_ = state::pending;
 
     /// Coroutine handles of processes waiting for this event.
-    std::vector<std::coroutine_handle<>> handles{};
+    std::vector<std::coroutine_handle<>> handles_ = {};
 
     /// Callbacks for this event.
-    std::vector<std::function<void(const event<Time> &)>> cbs{};
+    std::vector<std::function<void(const event<Time> &)>> cbs_ = {};
 
     /// Reference to the simulation.
-    simulation<Time> &sim;
+    simulation<Time> &sim_;
   };
 
   /// Event associated with the coroutine awaiting this event, if any.

@@ -68,7 +68,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim{sim}, ev{sim} {}
+        : sim_{sim}, ev_{sim} {}
 
     /**
      * Construct a new promise type instance.
@@ -81,7 +81,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim{sim}, ev{sim} {}
+        : sim_{sim}, ev_{sim} {}
 
     /**
      * Construct a new promise type instance.
@@ -94,7 +94,7 @@ public:
      * @param c Class instance.
      */
     template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...) : sim{c.sim}, ev{c.sim} {}
+    explicit promise_type(Class &&c, Args &&...) : sim_{c.sim}, ev_{c.sim} {}
 
 #ifdef __INTELLISENSE__
     /**
@@ -105,14 +105,14 @@ public:
 #endif
 
     /// @return Event which will be triggered when the process finishes.
-    value_event<Value, Time> get_return_object() const { return ev; }
+    value_event<Value, Time> get_return_object() const { return ev_; }
 
     /**
      * Register the process to be started immediately via an initial event.
      *
      * @return Initial event.
      */
-    event<Time> initial_suspend() const { return sim.timeout(Time{0}); }
+    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
 
     /// @return Awaitable which is always ready.
     std::suspend_never final_suspend() const noexcept { return {}; }
@@ -121,13 +121,13 @@ public:
     void unhandled_exception() const { assert(false); }
 
     /// Trigger the underlying event since the process finished.
-    void return_value(Value value) const { ev.trigger(value); }
+    void return_value(Value value) const { ev_.trigger(value); }
 
     /// Reference to the simulation.
-    simulation<Time> &sim;
+    simulation<Time> &sim_;
 
     /// Underlying event which is triggered when the process finishes.
-    const value_event<Value, Time> ev;
+    const value_event<Value, Time> ev_;
   };
 
 private:
