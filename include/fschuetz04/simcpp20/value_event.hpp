@@ -123,7 +123,6 @@ public:
     /// Trigger the underlying event since the process finished.
     void return_value(Value value) const { ev.trigger(value); }
 
-  private:
     /// Reference to the simulation.
     simulation<Time> &sim;
 

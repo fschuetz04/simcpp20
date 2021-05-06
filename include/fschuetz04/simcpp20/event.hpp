@@ -147,11 +147,13 @@ public:
   bool await_ready() const { return processed(); }
 
   /**
-   * Suspend a process and resume it when the event is processed.
+   * Suspend a coroutine and resume it when the event is processed.
    *
-   * @param handle Corotuine handle of the process.
+   * @tparam Promise Promise type of the coroutine.
+   * @param handle Corotuine handle.
    */
-  void await_suspend(std::coroutine_handle<promise_type> handle) {
+  template <typename Promise>
+  void await_suspend(std::coroutine_handle<Promise> handle) {
     if (aborted()) {
       handle.destroy();
       return;
@@ -160,15 +162,15 @@ public:
     data_->handles.push_back(handle);
 
     decrement_use_count();
-    handle_ = handle;
+    awaiting_ev_ = &handle.promise().ev;
   }
 
   /// Resume a process.
   void await_resume() {
     data_->use_count += 1;
-    auto handle = std::exchange(handle_, std::nullopt);
+    auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
 
-    if (handle.value().promise().ev.aborted()) {
+    if (awaiting_ev->aborted()) {
       throw nullptr;
     }
   }
@@ -300,7 +302,7 @@ private:
 
   /// Decrement the use count and free the shared state if it reaches 0.
   void decrement_use_count() {
-    if (handle_.has_value() || data_ == nullptr) {
+    if (awaiting_ev_ != nullptr || data_ == nullptr) {
       return;
     }
 
@@ -350,7 +352,7 @@ private:
     state state_ = state::pending;
 
     /// Coroutine handles of processes waiting for this event.
-    std::vector<std::coroutine_handle<promise_type>> handles{};
+    std::vector<std::coroutine_handle<>> handles{};
 
     /// Callbacks for this event.
     std::vector<std::function<void(const event<Time> &)>> cbs{};
@@ -359,11 +361,11 @@ private:
     simulation<Time> &sim;
   };
 
+  /// Event associated with the coroutine awaiting this event, if any.
+  const event *awaiting_ev_ = nullptr;
+
   /// Shared data of the event.
   data *data_;
-
-  /// Handle of the coroutine waiting for this event, if any.
-  std::optional<std::coroutine_handle<promise_type>> handle_ = std::nullopt;
 
   /// The simulation needs access to process.
   friend class simulation<Time>;
