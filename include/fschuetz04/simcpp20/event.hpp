@@ -155,13 +155,19 @@ public:
     }
 
     data_->handles_.push_back(handle);
-
-    decrement_use_count();
     awaiting_ev_ = &handle.promise().ev_;
+    decrement_use_count();
   }
 
-  /// Called when a coroutine is resumed after using co_await on the event.
+  /**
+   * Called when a coroutine is resumed after using co_await on the event or if
+   * the coroutine did not need to be suspended.
+   */
   void await_resume() {
+    if (awaiting_ev_ == nullptr) {
+      return;
+    }
+
     data_->use_count_ += 1;
     auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
 
