@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::event<> process(simcpp20::simulation<> &sim) {
   printf("[%.0f] 1\n", sim.now());

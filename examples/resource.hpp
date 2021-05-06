@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <queue>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 class resource {
 public:

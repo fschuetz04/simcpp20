@@ -1,5 +1,3 @@
-# TODO include simcpp20 in subfolder
-
 cmake_minimum_required(VERSION 3.14)
 
 if(DEFINED PROJECT_NAME)
@@ -14,7 +12,7 @@ project(simcpp20
   HOMEPAGE_URL "https://github.com/fschuetz04/simcpp20"
   LANGUAGES    CXX)
 
-add_subdirectory(simcpp20)
+add_subdirectory(include/fschuetz04/simcpp20)
 
 option(FSCHUETZ04_SIMCPP20_BUILD_TESTS "Build tests" ${MAIN_PROJECT})
 if(FSCHUETZ04_SIMCPP20_BUILD_TESTS)

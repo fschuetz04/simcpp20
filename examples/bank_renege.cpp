@@ -6,8 +6,8 @@
 #include <cstdio>
 #include <random>
 
+#include "fschuetz04/simcpp20.hpp"
 #include "resource.hpp"
-#include "simcpp20.hpp"
 
 struct config {
   int n_customers;

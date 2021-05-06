@@ -6,7 +6,7 @@
 
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/generators/catch_generators.hpp"
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
                           double target, bool &finished) {

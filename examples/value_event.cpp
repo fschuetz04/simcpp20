@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::event<> consumer(simcpp20::simulation<> &sim,
                            simcpp20::value_event<int> ev) {

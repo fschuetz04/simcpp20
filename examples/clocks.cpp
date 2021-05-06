@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::event<> clock_proc(simcpp20::simulation<> &sim, char const *name,
                              double delay) {

@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
 struct ev_type;
 using ev_inner = simcpp20::value_event<ev_type>;
