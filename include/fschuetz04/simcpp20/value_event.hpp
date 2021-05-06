@@ -127,7 +127,7 @@ public:
     simulation<Time> &sim_;
 
     /// Underlying event which is triggered when the process finishes.
-    const value_event<Value, Time> ev_;
+    value_event<Value, Time> ev_;
   };
 
 private:

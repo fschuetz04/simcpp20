@@ -4,7 +4,8 @@
 #pragma once
 
 #include <cassert>    // assert
-#include <cstdint>    // uint64_t
+#include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint64_t
 #include <functional> // std::greater
 #include <memory>     // std::make_shared
 #include <queue>      // std::priority_queue
@@ -14,8 +15,7 @@
 #include "value_event.hpp"
 
 namespace simcpp20 {
-template <typename Time = double> using event_alias = event<Time>;
-using id_type = uint64_t;
+using id_type = std::uint64_t;
 
 /**
  * Used to run a discrete-event simulation.
@@ -30,6 +30,9 @@ using id_type = uint64_t;
  * @tparam Time Type used for simulation time.
  */
 template <typename Time = double> class simulation {
+private:
+  using event_type = simcpp20::event<Time>;
+
 public:
   /// Destroy all coroutines of this simulation.
   ~simulation() {
@@ -37,7 +40,7 @@ public:
   }
 
   /// @return Pending event.
-  event_alias<Time> event() { return event_alias<Time>{*this}; }
+  event_type event() { return event_type{*this}; }
 
   /**
    * @tparam Value Value type of the event.
@@ -51,7 +54,7 @@ public:
    * @param delay Delay after which to process the event.
    * @return Pending event.
    */
-  event_alias<Time> timeout(Time delay) {
+  event_type timeout(Time delay) {
     auto ev = event();
     schedule(ev, delay);
     return ev;
@@ -81,7 +84,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  event_alias<Time> any_of(std::vector<event_alias<Time>> evs) {
+  event_type any_of(std::vector<event_type> evs) {
     if (evs.size() == 0) {
       return timeout(0);
     }
@@ -112,7 +115,7 @@ public:
    * @param evs List of events.
    * @return Created event.
    */
-  event_alias<Time> all_of(std::vector<event_alias<Time>> evs) {
+  event_type all_of(std::vector<event_type> evs) {
     size_t n = evs.size();
 
     for (const auto &ev : evs) {
@@ -126,7 +129,7 @@ public:
     }
 
     auto all_of_ev = event();
-    auto n_ptr = std::make_shared<size_t>(n);
+    auto n_ptr = std::make_shared<std::size_t>(n);
 
     for (const auto &ev : evs) {
       ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
@@ -146,7 +149,7 @@ public:
    * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
    */
-  void schedule(event_alias<Time> ev, Time delay = Time{0}) {
+  void schedule(event_type ev, Time delay = Time{0}) {
     if (delay < Time{0}) {
       assert(false);
       return;
@@ -212,7 +215,7 @@ private:
      * insertion order.
      * @param ev Event to process.
      */
-    scheduled_event(Time time, id_type id, event_alias<Time> ev)
+    scheduled_event(Time time, id_type id, event_type ev)
         : time_{time}, id_{id}, ev_{ev} {}
 
     /**
@@ -231,9 +234,8 @@ private:
     Time time() const { return time_; }
 
     /// @return Event to process.
-    event_alias<Time> ev() const { return ev_; }
+    event_type ev() const { return ev_; }
 
-  private:
     /// Time at which to process the event.
     Time time_;
 
@@ -244,7 +246,7 @@ private:
     id_type id_;
 
     /// Event to process.
-    event_alias<Time> ev_;
+    event_type ev_;
   };
 
   /// Event queue.

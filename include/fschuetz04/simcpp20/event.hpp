@@ -272,7 +272,7 @@ public:
     simulation<Time> &sim_;
 
     /// Underlying event which is triggered when the process finishes.
-    const event<Time> ev_;
+    event<Time> ev_;
   };
 
 private:
@@ -362,7 +362,7 @@ private:
   };
 
   /// Event associated with the coroutine awaiting this event, if any.
-  const event *awaiting_ev_ = nullptr;
+  event *awaiting_ev_ = nullptr;
 
   /// Shared data of the event.
   data *data_;
