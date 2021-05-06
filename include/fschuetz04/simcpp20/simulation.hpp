@@ -7,8 +7,9 @@
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint64_t
 #include <functional> // std::greater
-#include <memory>     // std::make_shared
+#include <memory>     // std::make_shared, std::make_unique
 #include <queue>      // std::priority_queue
+#include <utility>    // std::forward
 #include <vector>     // std::vector
 
 #include "event.hpp"
@@ -60,10 +61,10 @@ public:
    * @param value Value of the event.
    * @return New pending value event.
    */
-  template <typename Value>
-  value_event<Value, Time> timeout(Time delay, Value value) {
+  template <typename Value, typename... Args>
+  value_event<Value, Time> timeout(Time delay, Args &&...args) {
     auto ev = event<Value>();
-    *ev.value_ = value;
+    *ev.value_ = std::make_unique<Value>(std::forward<Args>(args)...);
     schedule(ev, delay);
     return ev;
   }
