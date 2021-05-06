@@ -20,7 +20,7 @@ set(TARGETS
 
 foreach(TARGET ${TARGETS})
   add_executable(${TARGET} ${TARGET}.cpp)
-  target_link_libraries(${TARGET} PRIVATE simcpp20)
+  target_link_libraries(${TARGET} PRIVATE fschuetz04::simcpp20)
 
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(${TARGET} PRIVATE -Wall -Wextra)

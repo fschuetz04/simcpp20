@@ -1,4 +1,4 @@
-# TODO include simcpp20 in subfolder, move target into namespace
+# TODO include simcpp20 in subfolder
 
 cmake_minimum_required(VERSION 3.14)
 
