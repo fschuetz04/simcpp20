@@ -24,8 +24,7 @@ using id_type = std::uint64_t;
  *
  *     simcpp20::simulation<> sim;
  *
- * TODO(fschuetz04): Keep list of pending events to clear them up? Own all
- * events?
+ * TODO(fschuetz04): Keep list of pending events to clear them up?
  *
  * @tparam Time Type used for simulation time.
  */
@@ -34,17 +33,12 @@ private:
   using event_type = simcpp20::event<Time>;
 
 public:
-  /// Destroy all coroutines of this simulation.
-  ~simulation() {
-    // TODO(fschuetz04): Destroy coroutines?
-  }
-
-  /// @return Pending event.
+  /// @return New pending event.
   event_type event() { return event_type{*this}; }
 
   /**
    * @tparam Value Value type of the event.
-   * @return Pending value event.
+   * @return New pending value event.
    */
   template <typename Value> value_event<Value, Time> event() {
     return value_event<Value, Time>{*this};
@@ -52,7 +46,7 @@ public:
 
   /**
    * @param delay Delay after which to process the event.
-   * @return Pending event.
+   * @return New pending event.
    */
   event_type timeout(Time delay) {
     auto ev = event();
@@ -64,7 +58,7 @@ public:
    * @tparam Value Value type of the event.
    * @param delay Delay after which to process the event.
    * @param value Value of the event.
-   * @return Pending value event.
+   * @return New pending value event.
    */
   template <typename Value>
   value_event<Value, Time> timeout(Time delay, Value value) {
@@ -75,14 +69,9 @@ public:
   }
 
   /**
-   * Create a pending event which is triggered when any of the given events is
-   * processed.
-   *
-   * TODO(fschuetz04): Check behavior. Check whether events are aborted /
-   * destroyed?
-   *
    * @param evs List of events.
-   * @return Created event.
+   * @return New pending event which is triggered when any of the given events
+   * is processed.
    */
   event_type any_of(std::vector<event_type> evs) {
     if (evs.size() == 0) {
@@ -106,14 +95,9 @@ public:
   }
 
   /**
-   * Create a pending event which is triggered when all of the given events are
-   * processed.
-   *
-   * TODO(fschuetz04): Check behavior. Check whether events are aborted /
-   * destroyed?
-   *
    * @param evs List of events.
-   * @return Created event.
+   * @return New pending event which is triggered when all of the given events
+   * are processed.
    */
   event_type all_of(std::vector<event_type> evs) {
     size_t n = evs.size();
@@ -144,10 +128,8 @@ public:
   }
 
   /**
-   * Schedule the given event to be processed after the given delay.
-   *
-   * @param delay Delay after which to process the event.
    * @param ev Event to be processed.
+   * @param delay Delay after which to process the event.
    */
   void schedule(event_type ev, Time delay = Time{0}) {
     if (delay < Time{0}) {
@@ -159,19 +141,15 @@ public:
     ++next_id_;
   }
 
-  /**
-   * Extract the next scheduled event from the event queue and process it.
-   *
-   * @throw When the event queue is empty.
-   */
+  /// Process the next scheduled event.
   void step() {
-    auto scheduled_ev = scheduled_evs_.top();
+    auto sev = scheduled_evs_.top();
     scheduled_evs_.pop();
-    now_ = scheduled_ev.time();
-    scheduled_ev.ev().process();
+    now_ = sev.time_;
+    sev.ev_.process();
   }
 
-  /// Run the simulation until the event queue is empty.
+  /// Run the simulation until no more events are scheduled.
   void run() {
     while (!empty()) {
       step();
@@ -179,8 +157,9 @@ public:
   }
 
   /**
-   * Run the simulation until the next scheduled event is scheduled at or after
-   * the given target time or the event queue is empty.
+   * Run the simulation until the target time is reached or no more events are
+   * scheduled. The target time is reached when the next scheduled event is
+   * scheduled at or after the target time.
    *
    * @param target Target time.
    */
@@ -190,25 +169,25 @@ public:
       return;
     }
 
-    while (!empty() && scheduled_evs_.top().time() < target) {
+    while (!empty() && scheduled_evs_.top().time_ < target) {
       step();
     }
 
     now_ = target;
   }
 
-  /// @return Whether the event queue is empty.
+  /// @return Whether no events are scheduled.
   bool empty() const { return scheduled_evs_.empty(); }
 
   /// @return Current simulation time.
   Time now() const { return now_; }
 
 private:
-  /// One event in the event queue.
+  /// One event scheduled to be processed.
   class scheduled_event {
   public:
     /**
-     * Construct a new scheduled event.
+     * Constructor.
      *
      * @param time Time at which to process the event.
      * @param id_ Incremental ID to sort events scheduled at the same time by
@@ -223,18 +202,12 @@ private:
      * @return Whether this event is scheduled before the given event.
      */
     bool operator>(const scheduled_event &other) const {
-      if (time() != other.time()) {
-        return time() > other.time();
+      if (time_ != other.time_) {
+        return time_ > other.time_;
       }
 
       return id_ > other.id_;
     }
-
-    /// @return Time at which to process the event.
-    Time time() const { return time_; }
-
-    /// @return Event to process.
-    event_type ev() const { return ev_; }
 
     /// Time at which to process the event.
     Time time_;
@@ -249,7 +222,7 @@ private:
     event_type ev_;
   };
 
-  /// Event queue.
+  /// Scheduled events.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
                       std::greater<scheduled_event>>
       scheduled_evs_{};
