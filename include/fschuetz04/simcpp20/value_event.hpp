@@ -7,31 +7,36 @@
 #include <coroutine> // std::suspend_never
 #include <memory>    // std::make_shared, std::shared_ptr, std::make_unique, ...
 #include <optional>  // std::optional
-#include <utility>   // std::forward
+#include <utility>   // std::forward, std::exchange
 
 namespace simcpp20 {
 template <typename Value, class Time = double>
 class value_event : public event<Time> {
 public:
-  explicit value_event(simulation<Time> &sim) : event<Time>{sim} {}
+  /**
+   * Constructor.
+   *
+   * @param simulation Reference to the simulation.
+   */
+  explicit value_event(simulation<Time> &sim) : event<Time>{new data(sim)} {}
 
   template <typename... Args> void trigger(Args &&...args) const {
     if (!event<Time>::pending()) {
       return;
     }
 
-    *value_ = std::make_unique<Value>(std::forward<Args>(args)...);
+    set_value(std::forward<Args>(args)...);
     event<Time>::trigger();
   }
 
-  Value await_resume() {
+  Value &await_resume() {
     event<Time>::await_resume();
     return value();
   }
 
-  Value value() const {
-    assert(*value_);
-    return **value_;
+  Value &value() const {
+    auto casted_data = static_cast<data *>(event<Time>::data_);
+    return *casted_data->value_;
   }
 
   class promise_type {
@@ -70,8 +75,27 @@ public:
   };
 
 private:
-  std::shared_ptr<std::unique_ptr<Value>> value_ =
-      std::make_shared<std::unique_ptr<Value>>();
+  /// Shared data of the event.
+  class data : public event<Time>::data {
+  public:
+    using event<Time>::data::data;
+
+    ~data() override {
+      event<Time>::data::~data();
+
+      if (value_ != nullptr) {
+        delete std::exchange(value_, nullptr);
+      }
+    }
+
+    /// Value of the event.
+    Value *value_;
+  };
+
+  template <typename... Args> void set_value(Args &&...args) const {
+    auto casted_data = static_cast<data *>(event<Time>::data_);
+    casted_data->value_ = new Value(std::forward<Args>(args)...);
+  }
 
   friend class simulation<Time>;
 };

@@ -294,7 +294,7 @@ public:
     event<Time> ev_;
   };
 
-private:
+protected:
   /**
    * Set the event state to processed, resume all coroutines awaiting this
    * event, and call all callbacks added to the event.
@@ -359,7 +359,7 @@ private:
     explicit data(simulation<Time> &sim) : sim_{sim} {}
 
     /// Destructor.
-    ~data() {
+    virtual ~data() {
       for (auto &handle : handles_) {
         handle.destroy();
       }
@@ -380,6 +380,13 @@ private:
     /// Reference to the simulation.
     simulation<Time> &sim_;
   };
+
+  /**
+   * Constructor.
+   *
+   * @param data Shared data.
+   */
+  explicit event(data *data_) : data_{data_} { data_->use_count_ += 1; }
 
   /// Event associated with the coroutine awaiting this event, if any.
   event *awaiting_ev_ = nullptr;

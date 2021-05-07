@@ -64,7 +64,7 @@ public:
   template <typename Value, typename... Args>
   value_event<Value, Time> timeout(Time delay, Args &&...args) {
     auto ev = event<Value>();
-    *ev.value_ = std::make_unique<Value>(std::forward<Args>(args)...);
+    ev.set_value(std::forward<Args>(args)...);
     schedule(ev, delay);
     return ev;
   }
