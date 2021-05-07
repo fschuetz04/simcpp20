@@ -388,7 +388,7 @@ private:
   data *data_;
 
   friend class simulation<Time>;
-  friend class std::hash<event<Time>>;
+  friend struct std::hash<event<Time>>;
 };
 } // namespace simcpp20
 
