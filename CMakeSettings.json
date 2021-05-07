@@ -1,0 +1,20 @@
+﻿{
+  "configurations": [
+    {
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "configurationType": "Debug",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "name": "VS Debug"
+    },
+    {
+      "buildRoot": "${projectDir}\\out\\build\\${name}",
+      "configurationType": "RelWithDebInfo",
+      "generator": "Ninja",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "name": "VS Release"
+    }
+  ]
+}
