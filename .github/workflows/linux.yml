@@ -1,4 +1,4 @@
-name: CMake
+name: Linux
 on:
   push:
     branches: [main]
@@ -9,11 +9,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        build_type: [Debug, Release]
         cxx: [g++-10]
+        build_type: [Debug, Release]
     runs-on: ${{matrix.os}}
     env:
-      CXX: ${{maxtrix.cxx}}
+      CXX: ${{matrix.cxx}}
     steps:
     - uses: actions/checkout@v2
     - name: Configure
