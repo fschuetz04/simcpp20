@@ -16,7 +16,6 @@ add_subdirectory(include/fschuetz04/simcpp20)
 
 option(FSCHUETZ04_SIMCPP20_BUILD_TESTS "Build tests" ${MAIN_PROJECT})
 if(FSCHUETZ04_SIMCPP20_BUILD_TESTS)
-  enable_testing()
   add_subdirectory(tests)
 endif()
 

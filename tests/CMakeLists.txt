@@ -13,5 +13,3 @@ target_link_libraries(tests PRIVATE
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(tests PRIVATE -Wall -Wextra)
 endif()
-
-add_test(tests tests)
