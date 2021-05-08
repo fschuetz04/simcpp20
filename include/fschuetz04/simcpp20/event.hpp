@@ -155,8 +155,8 @@ public:
     }
 
     data_->handles_.push_back(handle);
-    awaiting_ev_ = &handle.promise().ev_;
     decrement_use_count();
+    awaiting_ev_ = &handle.promise().ev_;
   }
 
   /**
