@@ -133,10 +133,7 @@ public:
    * @param delay Delay after which to process the event.
    */
   void schedule(event_type ev, Time delay = Time{0}) {
-    if (delay < Time{0}) {
-      assert(false);
-      return;
-    }
+    assert(delay >= Time{0});
 
     scheduled_evs_.emplace(now() + delay, next_id_, ev);
     ++next_id_;
@@ -165,10 +162,7 @@ public:
    * @param target Target time.
    */
   void run_until(Time target) {
-    if (target < now()) {
-      assert(false);
-      return;
-    }
+    assert(target >= now());
 
     while (!empty() && scheduled_evs_.top().time_ < target) {
       step();

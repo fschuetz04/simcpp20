@@ -36,6 +36,9 @@ public:
    * @param args Arguments to construct the event value with.
    */
   template <typename... Args> void trigger(Args &&...args) const {
+    assert(awaiting_ev_ == nullptr);
+    assert(data_ != nullptr);
+
     if (!event<Time>::pending()) {
       return;
     }
@@ -52,12 +55,17 @@ public:
    * @return Value of the event.
    */
   Value &await_resume() {
+    assert(data_ != nullptr);
+
     event<Time>::await_resume();
     return value();
   }
 
   /// @return Value of the event.
   Value &value() const {
+    assert(awaiting_ev_ == nullptr);
+    assert(data_ != nullptr);
+
     auto casted_data = static_cast<data *>(event<Time>::data_);
     return *casted_data->value_;
   }
