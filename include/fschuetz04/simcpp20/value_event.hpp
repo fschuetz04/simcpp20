@@ -5,8 +5,6 @@
 
 #include <cassert>   // assert
 #include <coroutine> // std::suspend_never
-#include <memory>    // std::make_shared, std::shared_ptr, std::make_unique, ...
-#include <optional>  // std::optional
 #include <utility>   // std::forward, std::exchange
 
 namespace simcpp20 {
