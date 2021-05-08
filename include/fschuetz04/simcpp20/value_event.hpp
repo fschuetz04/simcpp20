@@ -170,7 +170,7 @@ private:
     }
 
     /// Value of the event.
-    Value *value_;
+    Value *value_ = nullptr;
   };
 
   /**
