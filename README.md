@@ -74,7 +74,7 @@ include(FetchContent)
 
 FetchContent_Declare(fschuetz04_simcpp20
     GIT_REPOSITORY https://github.com/fschuetz04/simcpp20
-    GIT_TAG        14fcc81ed5577b570a067a523914ec06b3527a1f) # replace with latest revision
+    GIT_TAG        ad975317db40d81dbe4c45c5db4edcd8ec6e2de8) # replace with latest revision
 
 FetchContent_MakeAvailable(fschuetz04_simcpp20)
 
