@@ -1,5 +1,8 @@
 # SimCpp20
 
+[![Linux](https://github.com/fschuetz04/simcpp20/actions/workflows/linux.yml/badge.svg)](https://github.com/fschuetz04/simcpp20/actions/workflows/linux.yml)
+[![Windows](https://github.com/fschuetz04/simcpp20/actions/workflows/windows.yml/badge.svg)](https://github.com/fschuetz04/simcpp20/actions/workflows/windows.yml)
+
 SimCpp20 is a discrete-event simulation framework for C++20.
 It is similar to SimPy and aims to be easy to set up and use.
 
