@@ -1,0 +1,21 @@
+name: Windows
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+        build_type: [Debug, Release]
+    runs-on: ${{matrix.os}}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Configure
+      run: cmake -B build -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
+    - name: Build
+      run: cmake --build build
+    - name: Test
+      run: build/tests/tests
