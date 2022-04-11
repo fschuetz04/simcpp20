@@ -328,6 +328,7 @@ public:
      * @return Awaitable which is always ready.
      */
     std::suspend_never final_suspend() const noexcept { return {}; }
+    // std::suspend_always final_suspend() const noexcept { return {}; }
 
     /// Refernece to the simulation.
     simulation<Time> &sim_;
@@ -409,7 +410,8 @@ protected:
     /// Destructor.
     virtual ~data() {
       for (auto &handle : handles_) {
-        handle.destroy();
+        if (handle)
+          handle.destroy();
       }
     }
 

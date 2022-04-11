@@ -149,6 +149,7 @@ public:
      * @return Awaitable which is always ready.
      */
     std::suspend_never final_suspend() const noexcept { return {}; }
+    // std::suspend_always final_suspend() const noexcept { return {}; }
 
     /// Reference to the simulation.
     simulation<Time> &sim_;
@@ -168,7 +169,10 @@ private:
 
     /// Destructor.
     ~data() override {
-      event<Time>::data::~data();
+      for (auto &handle : handles_) {
+        if (handle)
+          handle.destroy();
+      }
 
       if (value_ != nullptr) {
         delete std::exchange(value_, nullptr);
