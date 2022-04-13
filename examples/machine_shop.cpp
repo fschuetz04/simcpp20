@@ -6,7 +6,7 @@
 // TODO(fschuetz04): Memory leak
 
 #include "fschuetz04/simcpp20.hpp"
-#include "resource.hpp"
+#include "fschuetz04/resource.hpp"
 
 #include <cstdio>
 #include <random>

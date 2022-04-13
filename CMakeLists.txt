@@ -23,3 +23,4 @@ option(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES "Build examples" ${MAIN_PROJECT})
 if(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
