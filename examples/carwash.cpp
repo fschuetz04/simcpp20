@@ -7,7 +7,7 @@
 #include <random>
 
 #include "fschuetz04/simcpp20.hpp"
-#include "resource.hpp"
+#include "fschuetz04/resource.hpp"
 
 struct config {
   int initial_cars;
