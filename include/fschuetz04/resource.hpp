@@ -6,14 +6,15 @@
 #include <cstdint>
 #include <queue>
 
-#include "simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp"
 
+template <class TTime = double>
 class resource {
 public:
-  resource(simcpp20::simulation<> &sim, uint64_t available)
+  resource(simcpp20::simulation<TTime> &sim, uint64_t available)
       : sim{sim}, available_{available} {}
 
-  simcpp20::event<> request() {
+  simcpp20::event<TTime> request() {
     auto ev = sim.event();
     evs.push(ev);
     trigger_evs();
@@ -28,8 +29,8 @@ public:
   uint64_t available() { return available_; }
 
 private:
-  std::queue<simcpp20::event<>> evs{};
-  simcpp20::simulation<> &sim;
+  std::queue<simcpp20::event<TTime>> evs{};
+  simcpp20::simulation<TTime> &sim;
   uint64_t available_;
 
   void trigger_evs() {
