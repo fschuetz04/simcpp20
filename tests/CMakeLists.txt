@@ -2,7 +2,7 @@ include(FetchContent)
 
 FetchContent_Declare(Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2
-  GIT_TAG        v3.1.0)
+  GIT_TAG        97c48e0c343d26d50764fafdc90b1e630fbd10ce) # v3.1.0
 FetchContent_MakeAvailable(Catch2)
 
 add_executable(tests tests.cpp)
