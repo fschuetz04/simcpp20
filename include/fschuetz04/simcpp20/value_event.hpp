@@ -176,8 +176,6 @@ private:
 
     /// Destructor.
     ~data() override {
-      event<Time>::data::~data();
-
       if (value_ != nullptr) {
         delete std::exchange(value_, nullptr);
       }
