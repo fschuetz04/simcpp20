@@ -3,7 +3,7 @@
 
 // See https://simpy.readthedocs.io/en/latest/examples/machine_shop.html
 
-// TODO(fschuetz04): Memory leak
+// TODO(fschuetz04): memory leak
 
 #include "fschuetz04/simcpp20.hpp"
 #include "resource.hpp"
