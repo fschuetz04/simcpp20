@@ -181,7 +181,7 @@ public:
    * Called when a coroutine is suspended after using co_await on the event.
    *
    * @tparam Promise Promise type of the coroutine.
-   * @param handle Corotuine handle.
+   * @param handle Coroutine handle.
    */
   template <typename Promise>
   void await_suspend(std::coroutine_handle<Promise> handle) {
@@ -339,7 +339,7 @@ public:
       return {};
     }
 
-    /// Refernece to the simulation.
+    /// Reference to the simulation.
     simulation<Time> &sim_;
 
     /**
@@ -461,7 +461,7 @@ protected:
 } // namespace simcpp20
 
 namespace std {
-/// Spezialization of std::hash for simcpp20::event.
+/// Specialization of std::hash for simcpp20::event.
 template <typename Time> struct hash<simcpp20::event<Time>> {
   /**
    * @param ev Event.
