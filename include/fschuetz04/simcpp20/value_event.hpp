@@ -119,7 +119,9 @@ public:
      * @return Value event associated with the coroutine. This event is
      * triggered when the coroutine returns with the value it returns.
      */
-    value_event<Value, Time> get_return_object() const { return ev_; }
+    value_event<Value, Time> get_return_object() const {
+      return ev_;
+    }
 
     /**
      * Called when the coroutine is started. The coroutine awaits the return
@@ -127,10 +129,14 @@ public:
      *
      * @return Event which will be processed at the current simulation time.
      */
-    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
+    event<Time> initial_suspend() const {
+      return sim_.timeout(Time{0});
+    }
 
     /// Called when an exception is thrown inside the coroutine and not handled.
-    void unhandled_exception() const { assert(false); }
+    void unhandled_exception() const {
+      assert(false);
+    }
 
     /**
      * Called when the coroutine returns. Trigger the event associated with the
@@ -148,7 +154,9 @@ public:
      *
      * @return Awaitable which is always ready.
      */
-    std::suspend_never final_suspend() const noexcept { return {}; }
+    std::suspend_never final_suspend() const noexcept {
+      return {};
+    }
 
     /// Reference to the simulation.
     simulation<Time> &sim_;

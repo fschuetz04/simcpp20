@@ -23,7 +23,7 @@ simcpp20::event<> customer(simcpp20::simulation<> &sim, config &conf, int id) {
 
   auto request = conf.counters.request();
   auto max_wait_time = conf.max_wait_time_dist(conf.gen);
-  co_await(request | sim.timeout(max_wait_time));
+  co_await (request | sim.timeout(max_wait_time));
 
   if (!request.triggered()) {
     request.abort();

@@ -38,7 +38,7 @@ private:
       while (true) {
         double start = sim.now();
         auto timeout = sim.timeout(time_for_part);
-        co_await(timeout | failure);
+        co_await (timeout | failure);
 
         if (timeout.triggered()) {
           // part is finished
