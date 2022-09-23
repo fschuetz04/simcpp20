@@ -7,8 +7,7 @@
 #include <cmath>      // std::log2
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <cstddef>    // std::size_t
-#include <functional> // std::function
-#include <functional> // std::hash
+#include <functional> // std::function, std::hash
 #include <utility>    // std::exchange
 #include <vector>     // std::vector
 
