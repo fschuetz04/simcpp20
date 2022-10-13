@@ -7,6 +7,7 @@
 #include <cstddef>    // std::size_t
 #include <cstdint>    // std::uint64_t
 #include <functional> // std::greater
+#include <iostream>
 #include <memory>     // std::make_shared, std::make_unique
 #include <queue>      // std::priority_queue
 #include <utility>    // std::forward
@@ -32,10 +33,11 @@ using id_type = std::uint64_t;
 template <typename Time = double> class simulation {
 private:
   using event_type = simcpp20::event<Time>;
+  std::vector<event_type> pending_events = std::vector<event_type>();
 
 public:
   /// @return New pending event.
-  event_type event() { return event_type{*this}; }
+  event_type event() { return pending_events.emplace_back(*this); }
 
   /**
    * @tparam Value Value type of the event.
@@ -176,6 +178,27 @@ public:
 
   /// @return Current simulation time.
   Time now() const { return now_; }
+
+  /**
+   * Clear up all events awaiting by aborting them to 
+   * destroy the coroutine frame and free its resources.
+   */  
+  ~simulation<Time>() {
+    while (!empty()) {
+      auto sev = scheduled_evs_.top();
+      scheduled_evs_.pop();
+      sev.ev_.abort();
+    }
+
+    while (!pending_events.empty()) {
+      event_type pev = pending_events.back();
+      pending_events.pop_back();
+      pev.abort();
+    }
+    pending_events.clear();
+  }
+
+
 
 private:
   /// One event scheduled to be processed.
