@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        cxx: [g++-10, clang-14]
+        cxx: [g++-10, clang++-14]
         build_type: [Debug, Release]
     runs-on: ${{matrix.os}}
     steps:
