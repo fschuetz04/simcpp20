@@ -18,14 +18,14 @@ simcpp20::event<> party(simcpp20::simulation<> &sim, const char *name,
     printf("[%.0f] %s\n", sim.now(), name);
     co_await sim.timeout(delay);
     my_event = sim.event<ev_type>();
-    their_event.trigger(my_event);
+    their_event.trigger(ev_type{my_event});
   }
 }
 
 int main() {
   simcpp20::simulation<> sim;
   auto pong_event = sim.event<ev_type>();
-  auto ping_event = sim.timeout<ev_type>(0, pong_event);
+  auto ping_event = sim.timeout<ev_type>(0, ev_type{pong_event});
   party(sim, "ping", ping_event, 1);
   party(sim, "pong", pong_event, 2);
   sim.run_until(8);
