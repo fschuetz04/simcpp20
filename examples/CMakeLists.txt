@@ -21,10 +21,10 @@ set(TARGETS
 foreach(TARGET ${TARGETS})
   add_executable(${TARGET} ${TARGET}.cpp)
   target_link_libraries(${TARGET} PRIVATE fschuetz04::simcpp20)
-
-  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${TARGET} PRIVATE -Wall -Wextra)
-  endif()
+  target_compile_options(${TARGET} PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic>
+  )
 endforeach()
 
 target_link_libraries(clocks_units PRIVATE units)
