@@ -9,14 +9,14 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        cxx: [g++-10]
+        cxx: [g++-10, clang-14]
         build_type: [Debug, Release]
     runs-on: ${{matrix.os}}
     steps:
-    - uses: actions/checkout@v2
-    - name: Configure
-      run: CXX=${{matrix.cxx}} cmake -B build -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
-    - name: Build
-      run: cmake --build build
-    - name: Test
-      run: build/tests/tests
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: CXX=${{matrix.cxx}} cmake -B build -D CMAKE_BUILD_TYPE=${{matrix.build_type}}
+      - name: Build
+        run: cmake --build build
+      - name: Test
+        run: build/tests/tests
