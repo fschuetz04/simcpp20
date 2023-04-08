@@ -51,11 +51,9 @@ This project uses CMake.
 To build and execute the clocks example, run the following commands:
 
 ```shell
-mkdir build
-cd build
-cmake ..
-cmake --build .
-examples/clocks
+cmake -B build
+cmake --build build
+build/examples/clocks
 ```
 
 The CMake configuration has been tested with GCC (version 10 or later), Clang (version 14 or later) and MSVC.
