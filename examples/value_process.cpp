@@ -6,7 +6,7 @@
 #include "fschuetz04/simcpp20.hpp"
 
 simcpp20::value_event<int> producer(simcpp20::simulation<> &sim) {
-  co_await sim.timeout<int>(1, 1);
+  co_await sim.timeout(1);
   co_return 42;
 }
 
