@@ -132,7 +132,7 @@ public:
    * @param ev Event to be processed.
    * @param delay Delay after which to process the event.
    */
-  void schedule(event_type ev, Time delay = Time{0}) {
+  void schedule(const event_type& ev, Time delay = Time{0}) {
     assert(delay >= Time{0});
 
     scheduled_evs_.emplace(now() + delay, next_id_, ev);
