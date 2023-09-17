@@ -189,7 +189,7 @@ private:
      * insertion order.
      * @param ev Event to process.
      */
-    explicit scheduled_event(Time time, id_type id, event_type ev)
+    explicit scheduled_event(Time time, id_type id, const event_type& ev)
         : time_{time}, id_{id}, ev_{ev} {}
 
     /**
