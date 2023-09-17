@@ -22,7 +22,7 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit value_event(simulation<Time> &sim) : event<Time>{new data(sim)} {}
+  explicit value_event(simulation<Time> &sim) : event<Time>{std::make_shared<data>(sim)} {}
 
   /**
    * Set the event state to triggered, and schedule it to be processed
@@ -35,7 +35,7 @@ public:
    */
   template <typename... Args> void trigger(Args &&...args) const {
     assert(event<Time>::awaiting_ev_ == nullptr);
-    assert(event<Time>::data_ != nullptr);
+    assert(event<Time>::data_);
 
     if (!event<Time>::pending()) {
       return;
@@ -53,7 +53,7 @@ public:
    * @return Value of the event.
    */
   Value &await_resume() {
-    assert(event<Time>::data_ != nullptr);
+    assert(event<Time>::data_);
 
     event<Time>::await_resume();
     return value();
@@ -62,9 +62,9 @@ public:
   /// @return Value of the event.
   Value &value() const {
     assert(event<Time>::awaiting_ev_ == nullptr);
-    assert(event<Time>::data_ != nullptr);
+    assert(event<Time>::data_);
 
-    auto casted_data = static_cast<data *>(event<Time>::data_);
+    auto casted_data = static_pointer_cast<data>(event<Time>::data_);
     return *casted_data->value_;
   }
 
@@ -168,13 +168,10 @@ private:
 
     /// Destructor.
     ~data() override {
-      if (value_ != nullptr) {
-        delete std::exchange(value_, nullptr);
-      }
     }
 
     /// Value of the event.
-    Value *value_ = nullptr;
+    std::shared_ptr<Value> value_;
   };
 
   /**
@@ -182,8 +179,8 @@ private:
    * @param args Arguments to construct the event value with.
    */
   template <typename... Args> void set_value(Args &&...args) const {
-    auto casted_data = static_cast<data *>(event<Time>::data_);
-    casted_data->value_ = new Value(std::forward<Args>(args)...);
+    auto casted_data = static_pointer_cast<data>(event<Time>::data_);
+    casted_data->value_ = std::make_shared<Value>(std::forward<Args>(args)...);
   }
 
   friend class simulation<Time>;

@@ -27,11 +27,10 @@ public:
    * @param simulation Reference to the simulation.
    */
   explicit event(simulation<Time> &sim) : data_{new data(sim)} {
-    data_->use_count_ += 1;
   }
 
   /// Destructor.
-  ~event() { decrement_use_count(); }
+  virtual ~event() { }
 
   /**
    * Copy constructor.
@@ -39,8 +38,7 @@ public:
    * @param other Event to copy.
    */
   event(const event &other) : data_{other.data_} {
-    assert(data_ != nullptr);
-    data_->use_count_ += 1;
+    assert(data_);
   }
 
   /**
@@ -48,9 +46,9 @@ public:
    *
    * @param other Event to move.
    */
-  event(event &&other) noexcept : data_{std::exchange(other.data_, nullptr)} {
+  event(event &&other) noexcept : data_{std::move(other.data_)} {
     assert(other.awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
   }
 
   /**
@@ -60,10 +58,8 @@ public:
    * @return Reference to this instance.
    */
   event &operator=(const event &other) {
-    decrement_use_count();
     data_ = other.data_;
-    assert(data_ != nullptr);
-    data_->use_count_ += 1;
+    assert(data_);
     return *this;
   }
 
@@ -75,9 +71,8 @@ public:
    */
   event &operator=(event &&other) noexcept {
     assert(other.awaiting_ev_ == nullptr);
-    decrement_use_count();
-    data_ = std::exchange(other.data_, nullptr);
-    assert(data_ != nullptr);
+    data_ = std::move(other.data_);
+    assert(data_);
     return *this;
   }
 
@@ -89,7 +84,7 @@ public:
    */
   void trigger() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (!pending()) {
       return;
@@ -108,7 +103,7 @@ public:
    */
   void abort() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (!pending()) {
       return;
@@ -127,7 +122,7 @@ public:
   /// @param cb Callback to be called when the event is processed.
   void add_callback(std::function<void(const event<Time> &)> cb) const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (processed() || aborted()) {
       return;
@@ -139,28 +134,28 @@ public:
   /// @return Whether the event is pending.
   bool pending() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->state_ == state::pending;
   }
 
   /// @return Whether the event is triggered or processed.
   bool triggered() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->state_ == state::triggered || processed();
   }
 
   /// @return Whether the event is processed.
   bool processed() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->state_ == state::processed;
   }
 
   /// @return Whether the event is aborted.
   bool aborted() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->state_ == state::aborted;
   }
 
@@ -172,7 +167,7 @@ public:
    */
   bool await_ready() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return processed();
   }
 
@@ -185,7 +180,7 @@ public:
   template <typename Promise>
   void await_suspend(std::coroutine_handle<Promise> handle) {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (aborted()) {
       handle.destroy();
@@ -193,7 +188,6 @@ public:
     }
 
     data_->handles_.push_back(handle);
-    decrement_use_count();
     awaiting_ev_ = &handle.promise().ev_;
   }
 
@@ -202,13 +196,12 @@ public:
    * the coroutine did not need to be suspended.
    */
   void await_resume() {
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (awaiting_ev_ == nullptr) {
       return;
     }
 
-    data_->use_count_ += 1;
     auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
 
     if (awaiting_ev->aborted()) {
@@ -225,7 +218,7 @@ public:
    */
   event<Time> operator|(const event<Time> &other) const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->sim_.any_of({*this, other});
   }
 
@@ -238,7 +231,7 @@ public:
    */
   event<Time> operator&(const event<Time> &other) const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
     return data_->sim_.all_of({*this, other});
   }
 
@@ -345,7 +338,7 @@ protected:
    */
   void process() const {
     assert(awaiting_ev_ == nullptr);
-    assert(data_ != nullptr);
+    assert(data_);
 
     if (processed() || aborted()) {
       return;
@@ -362,21 +355,6 @@ protected:
       cb(*this);
     }
     data_->cbs_.clear();
-  }
-
-  /**
-   * Decrement the use count of the shared data and delete it if the use count
-   * reaches 0.
-   */
-  void decrement_use_count() {
-    if (awaiting_ev_ != nullptr || data_ == nullptr) {
-      return;
-    }
-
-    data_->use_count_ -= 1;
-    if (data_->use_count_ == 0) {
-      delete std::exchange(data_, nullptr);
-    }
   }
 
   /// State of the event.
@@ -412,9 +390,6 @@ protected:
       }
     }
 
-    /// Use count of the shared data.
-    int use_count_ = 0;
-
     /// State of the event.
     state state_ = state::pending;
 
@@ -433,16 +408,15 @@ protected:
    *
    * @param data Shared data.
    */
-  explicit event(data *data_) : data_{data_} {
-    assert(data_ != nullptr);
-    data_->use_count_ += 1;
+  explicit event(const std::shared_ptr<data>& data_) : data_{data_} {
+    assert(data_);
   }
 
   /// Event associated with the coroutine awaiting this event, if any.
   event *awaiting_ev_ = nullptr;
 
   /// Shared data of the event.
-  data *data_;
+  std::shared_ptr<data> data_;
 
   friend class simulation<Time>;
   friend struct std::hash<event<Time>>;
