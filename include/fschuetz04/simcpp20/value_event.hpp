@@ -22,7 +22,10 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit value_event(simulation<Time> &sim) : event<Time>{std::make_shared<data>(sim)} {}
+  explicit value_event(simulation<Time> &sim) : event<Time> {
+    std::make_shared<data>(sim)
+  }
+  {}
 
   /**
    * Set the event state to triggered, and schedule it to be processed
@@ -167,8 +170,7 @@ private:
     using event<Time>::data::data;
 
     /// Destructor.
-    ~data() override {
-    }
+    ~data() override {}
 
     /// Value of the event.
     std::shared_ptr<Value> value_;

@@ -74,7 +74,7 @@ public:
    * @return New pending event which is triggered when any of the given events
    * is processed.
    */
-  event_type any_of(const std::vector<event_type>& evs) {
+  event_type any_of(const std::vector<event_type> &evs) {
     if (evs.size() == 0) {
       return timeout(0);
     }
@@ -100,7 +100,7 @@ public:
    * @return New pending event which is triggered when all of the given events
    * are processed.
    */
-  event_type all_of(const std::vector<event_type>& evs) {
+  event_type all_of(const std::vector<event_type> &evs) {
     size_t n = evs.size();
 
     for (const auto &ev : evs) {
@@ -132,7 +132,7 @@ public:
    * @param ev Event to be processed.
    * @param delay Delay after which to process the event.
    */
-  void schedule(const event_type& ev, Time delay = Time{0}) {
+  void schedule(const event_type &ev, Time delay = Time{0}) {
     assert(delay >= Time{0});
 
     scheduled_evs_.emplace(now() + delay, next_id_, ev);
@@ -189,7 +189,7 @@ private:
      * insertion order.
      * @param ev Event to process.
      */
-    explicit scheduled_event(Time time, id_type id, const event_type& ev)
+    explicit scheduled_event(Time time, id_type id, const event_type &ev)
         : time_{time}, id_{id}, ev_{ev} {}
 
     /**
