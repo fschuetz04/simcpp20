@@ -52,7 +52,7 @@ public:
    *
    * @return Value of the event.
    */
-  Value &await_resume() {
+  const Value &await_resume() {
     assert(event<Time>::data_);
 
     event<Time>::await_resume();
@@ -60,7 +60,7 @@ public:
   }
 
   /// @return Value of the event.
-  Value &value() const {
+  const Value &value() const {
     assert(event<Time>::awaiting_ev_ == nullptr);
     assert(event<Time>::data_);
 
