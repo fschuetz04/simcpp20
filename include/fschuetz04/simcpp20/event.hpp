@@ -8,7 +8,8 @@
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <cstddef>    // std::size_t
 #include <functional> // std::function, std::hash
-#include <utility>    // std::exchange
+#include <memory>     // std::shared_ptr, std::make_shared
+#include <utility>    // std::exchange, std::move
 #include <vector>     // std::vector
 
 namespace simcpp20 {
@@ -26,20 +27,17 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit event(simulation<Time> &sim) : data_{new data(sim)} {
-  }
+  explicit event(simulation<Time> &sim) : data_{std::make_shared(sim)} {}
 
   /// Destructor.
-  virtual ~event() { }
+  virtual ~event() {}
 
   /**
    * Copy constructor.
    *
    * @param other Event to copy.
    */
-  event(const event &other) : data_{other.data_} {
-    assert(data_);
-  }
+  event(const event &other) : data_{other.data_} { assert(data_); }
 
   /**
    * Move constructor.
@@ -408,7 +406,7 @@ protected:
    *
    * @param data Shared data.
    */
-  explicit event(const std::shared_ptr<data>& data_) : data_{data_} {
+  explicit event(const std::shared_ptr<data> &data_) : data_{data_} {
     assert(data_);
   }
 
