@@ -27,7 +27,7 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit event(simulation<Time> &sim) : data_{std::make_shared(sim)} {}
+  explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {}
 
   /// Destructor.
   virtual ~event() {}
