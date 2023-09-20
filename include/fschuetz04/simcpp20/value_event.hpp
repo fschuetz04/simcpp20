@@ -118,7 +118,7 @@ public:
      * @return Value event associated with the coroutine. This event is
      * triggered when the coroutine returns with the value it returns.
      */
-    value_event<Value, Time> &get_return_object() const { return ev_; }
+    value_event<Value, Time> &get_return_object() { return ev_; }
 
     /**
      * Called when the coroutine is started. The coroutine awaits the return
@@ -127,7 +127,7 @@ public:
      * @return Event which will be processed at the current simulation time.
      */
     value_event<Value, Time> initial_suspend() {
-      sim_.schedule(ev_, 0);
+      sim_.schedule(ev_, Time(0));
       return ev_;
     }
 

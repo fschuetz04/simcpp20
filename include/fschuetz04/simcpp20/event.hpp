@@ -277,7 +277,7 @@ public:
      * @return Event which will be processed at the current simulation time.
      */
     event<Time> initial_suspend() {
-      sim_.schedule(ev_, 0);
+      sim_.schedule(ev_, Time(0));
       return ev_;
     }
 
