@@ -7,7 +7,6 @@
 #include <coroutine> // std::suspend_never
 #include <utility>   // std::forward, std::exchange
 
-
 namespace simcpp20 {
 /**
  * One event with a value.
@@ -24,8 +23,7 @@ public:
    * @param simulation Reference to the simulation.
    */
   explicit value_event(simulation<Time> &sim)
-      : event<Time>{std::make_shared<data>(sim)} {
-  }
+      : event<Time>{std::make_shared<data>(sim)} {}
 
   /**
    * Set the event state to triggered, and schedule it to be processed
@@ -120,7 +118,7 @@ public:
      * @return Value event associated with the coroutine. This event is
      * triggered when the coroutine returns with the value it returns.
      */
-    value_event<Value, Time> get_return_object() const { return ev_; }
+    value_event<Value, Time> &get_return_object() const { return ev_; }
 
     /**
      * Called when the coroutine is started. The coroutine awaits the return
@@ -128,7 +126,10 @@ public:
      *
      * @return Event which will be processed at the current simulation time.
      */
-    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
+    value_event<Value, Time> initial_suspend() {
+      sim_.schedule(ev_, 0);
+      return ev_;
+    }
 
     /// Called when an exception is thrown inside the coroutine and not handled.
     void unhandled_exception() const { assert(false); }

@@ -12,7 +12,6 @@
 #include <utility>    // std::exchange, std::move
 #include <vector>     // std::vector
 
-
 namespace simcpp20 {
 template <typename Time> class simulation;
 
@@ -28,7 +27,9 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} { assert(data_); }
+  explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {
+    assert(data_);
+  }
 
   /// Destructor.
   virtual ~event() {}
@@ -181,9 +182,7 @@ public:
    * Called when a coroutine is resumed after using co_await on the event or if
    * the coroutine did not need to be suspended.
    */
-  void await_resume() {
-    assert(data_);
-  }
+  void await_resume() { assert(data_); }
 
   /**
    * Alias for simulation::any_of.
@@ -269,7 +268,7 @@ public:
      * @return Event associated with the coroutine. This event is triggered
      * when the coroutine returns.
      */
-    event<Time> get_return_object() const { return ev_; }
+    event<Time> &get_return_object() { return ev_; }
 
     /**
      * Called when the coroutine is started. The coroutine awaits the return
@@ -277,7 +276,10 @@ public:
      *
      * @return Event which will be processed at the current simulation time.
      */
-    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
+    event<Time> initial_suspend() {
+      sim_.schedule(ev_, 0);
+      return ev_;
+    }
 
     /// Called when an exception is thrown inside the coroutine and not handled.
     void unhandled_exception() const { assert(false); }

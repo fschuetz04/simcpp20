@@ -15,7 +15,6 @@
 #include "event.hpp"
 #include "value_event.hpp"
 
-
 namespace simcpp20 {
 using id_type = std::uint64_t;
 
@@ -43,7 +42,7 @@ public:
    * @return New pending value event.
    */
   template <typename Value> value_event<Value, Time> event() {
-	return value_event<Value, Time>{*this};
+    return value_event<Value, Time>{*this};
   }
 
   /**
@@ -51,9 +50,9 @@ public:
    * @return New pending event.
    */
   event_type timeout(Time delay) {
-	auto ev = event();
-	schedule(ev, delay);
-	return ev;
+    auto ev = event();
+    schedule(ev, delay);
+    return ev;
   }
 
   /**
@@ -64,10 +63,10 @@ public:
    */
   template <typename Value, typename... Args>
   value_event<Value, Time> timeout(Time delay, Args &&...args) {
-	auto ev = event<Value>();
-	ev.set_value(std::forward<Args>(args)...);
-	schedule(ev, delay);
-	return ev;
+    auto ev = event<Value>();
+    ev.set_value(std::forward<Args>(args)...);
+    schedule(ev, delay);
+    return ev;
   }
 
   /**
@@ -75,25 +74,25 @@ public:
    * @return New pending event which is triggered when any of the given events
    * is processed.
    */
-  event_type any_of(const std::vector<event_type>& evs) {
-	if (evs.size() == 0) {
-	  return timeout(0);
-	}
+  event_type any_of(const std::vector<event_type> &evs) {
+    if (evs.size() == 0) {
+      return timeout(0);
+    }
 
-	for (const auto &ev : evs) {
-	  if (ev.processed()) {
-		return timeout(0);
-	  }
-	}
+    for (const auto &ev : evs) {
+      if (ev.processed()) {
+        return timeout(0);
+      }
+    }
 
-	auto any_of_ev = event();
+    auto any_of_ev = event();
 
-	for (const auto &ev : evs) {
-	  ev.add_callback(
-		  [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
-	}
+    for (const auto &ev : evs) {
+      ev.add_callback(
+          [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
+    }
 
-	return any_of_ev;
+    return any_of_ev;
   }
 
   /**
@@ -101,58 +100,58 @@ public:
    * @return New pending event which is triggered when all of the given events
    * are processed.
    */
-  event_type all_of(const std::vector<event_type>& evs) {
-	size_t n = evs.size();
+  event_type all_of(const std::vector<event_type> &evs) {
+    size_t n = evs.size();
 
-	for (const auto &ev : evs) {
-	  if (ev.processed()) {
-		--n;
-	  }
-	}
+    for (const auto &ev : evs) {
+      if (ev.processed()) {
+        --n;
+      }
+    }
 
-	if (n == 0) {
-	  return timeout(0);
-	}
+    if (n == 0) {
+      return timeout(0);
+    }
 
-	auto all_of_ev = event();
-	auto n_ptr = std::make_shared<std::size_t>(n);
+    auto all_of_ev = event();
+    auto n_ptr = std::make_shared<std::size_t>(n);
 
-	for (const auto &ev : evs) {
-	  ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
-		--*n_ptr;
-		if (*n_ptr == 0) {
-		  all_of_ev.trigger();
-		}
-	  });
-	}
+    for (const auto &ev : evs) {
+      ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
+        --*n_ptr;
+        if (*n_ptr == 0) {
+          all_of_ev.trigger();
+        }
+      });
+    }
 
-	return all_of_ev;
+    return all_of_ev;
   }
 
   /**
    * @param ev Event to be processed.
    * @param delay Delay after which to process the event.
    */
-  void schedule(const event_type& ev, Time delay = Time{0}) {
-	assert(delay >= Time{0});
+  void schedule(const event_type &ev, Time delay = Time{0}) {
+    assert(delay >= Time{0});
 
-	scheduled_evs_.emplace(now() + delay, next_id_, ev);
-	++next_id_;
+    scheduled_evs_.emplace(now() + delay, next_id_, ev);
+    ++next_id_;
   }
 
   /// Process the next scheduled event.
   void step() {
-	auto sev = scheduled_evs_.top();
-	scheduled_evs_.pop();
-	now_ = sev.time_;
-	sev.ev_.process();
+    auto sev = scheduled_evs_.top();
+    scheduled_evs_.pop();
+    now_ = sev.time_;
+    sev.ev_.process();
   }
 
   /// Run the simulation until no more events are scheduled.
   void run() {
-	while (!empty()) {
-	  step();
-	}
+    while (!empty()) {
+      step();
+    }
   }
 
   /**
@@ -163,13 +162,13 @@ public:
    * @param target Target time.
    */
   void run_until(Time target) {
-	assert(target >= now());
+    assert(target >= now());
 
-	while (!empty() && scheduled_evs_.top().time_ < target) {
-	  step();
-	}
+    while (!empty() && scheduled_evs_.top().time_ < target) {
+      step();
+    }
 
-	now_ = target;
+    now_ = target;
   }
 
   /// @return Whether no events are scheduled.
@@ -182,46 +181,46 @@ private:
   /// One event scheduled to be processed.
   class scheduled_event {
   public:
-	/**
-	 * Constructor.
-	 *
-	 * @param time Time at which to process the event.
-	 * @param id_ Incremental ID to sort events scheduled at the same time by
-	 * insertion order.
-	 * @param ev Event to process.
-	 */
-	explicit scheduled_event(Time time, id_type id, const event_type& ev)
-		: time_{time}, id_{id}, ev_{ev} {}
+    /**
+     * Constructor.
+     *
+     * @param time Time at which to process the event.
+     * @param id_ Incremental ID to sort events scheduled at the same time by
+     * insertion order.
+     * @param ev Event to process.
+     */
+    explicit scheduled_event(Time time, id_type id, const event_type &ev)
+        : time_{time}, id_{id}, ev_{ev} {}
 
-	/**
-	 * @param other Scheduled event to compare to.
-	 * @return Whether this event is scheduled before the given event.
-	 */
-	bool operator>(const scheduled_event &other) const {
-	  if (time_ != other.time_) {
-		return time_ > other.time_;
-	  }
+    /**
+     * @param other Scheduled event to compare to.
+     * @return Whether this event is scheduled before the given event.
+     */
+    bool operator>(const scheduled_event &other) const {
+      if (time_ != other.time_) {
+        return time_ > other.time_;
+      }
 
-	  return id_ > other.id_;
-	}
+      return id_ > other.id_;
+    }
 
-	/// Time at which to process the event.
-	Time time_;
+    /// Time at which to process the event.
+    Time time_;
 
-	/**
-	 * Incremental ID to sort events scheduled at the same time by insertion
-	 * order.
-	 */
-	id_type id_;
+    /**
+     * Incremental ID to sort events scheduled at the same time by insertion
+     * order.
+     */
+    id_type id_;
 
-	/// Event to process.
-	event_type ev_;
+    /// Event to process.
+    event_type ev_;
   };
 
   /// Scheduled events.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
-					  std::greater<scheduled_event>>
-	  scheduled_evs_{};
+                      std::greater<scheduled_event>>
+      scheduled_evs_{};
 
   /// Current simulation time.
   Time now_ = Time{0};
