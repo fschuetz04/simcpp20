@@ -12,6 +12,7 @@
 #include <utility>    // std::exchange, std::move
 #include <vector>     // std::vector
 
+
 namespace simcpp20 {
 template <typename Time> class simulation;
 
@@ -27,7 +28,7 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {}
+  explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} { assert(data_); }
 
   /// Destructor.
   virtual ~event() {}
@@ -45,7 +46,6 @@ public:
    * @param other Event to move.
    */
   event(event &&other) noexcept : data_{std::move(other.data_)} {
-    assert(other.awaiting_ev_ == nullptr);
     assert(data_);
   }
 
@@ -68,7 +68,6 @@ public:
    * @return Reference to this instance.
    */
   event &operator=(event &&other) noexcept {
-    assert(other.awaiting_ev_ == nullptr);
     data_ = std::move(other.data_);
     assert(data_);
     return *this;
@@ -81,7 +80,6 @@ public:
    * TODO(fschuetz04): Check whether used on a process?
    */
   void trigger() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (!pending()) {
@@ -100,7 +98,6 @@ public:
    * coroutine?
    */
   void abort() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (!pending()) {
@@ -113,13 +110,11 @@ public:
       handle.destroy();
     }
     data_->handles_.clear();
-
     data_->cbs_.clear();
   }
 
   /// @param cb Callback to be called when the event is processed.
   void add_callback(std::function<void(const event<Time> &)> cb) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (processed() || aborted()) {
@@ -131,28 +126,24 @@ public:
 
   /// @return Whether the event is pending.
   bool pending() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::pending;
   }
 
   /// @return Whether the event is triggered or processed.
   bool triggered() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::triggered || processed();
   }
 
   /// @return Whether the event is processed.
   bool processed() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::processed;
   }
 
   /// @return Whether the event is aborted.
   bool aborted() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::aborted;
   }
@@ -164,7 +155,6 @@ public:
    * @return Whether the event is processed.
    */
   bool await_ready() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return processed();
   }
@@ -177,7 +167,6 @@ public:
    */
   template <typename Promise>
   void await_suspend(std::coroutine_handle<Promise> handle) {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (aborted()) {
@@ -186,7 +175,6 @@ public:
     }
 
     data_->handles_.push_back(handle);
-    awaiting_ev_ = &handle.promise().ev_;
   }
 
   /**
@@ -195,16 +183,6 @@ public:
    */
   void await_resume() {
     assert(data_);
-
-    if (awaiting_ev_ == nullptr) {
-      return;
-    }
-
-    auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
-
-    if (awaiting_ev->aborted()) {
-      throw nullptr;
-    }
   }
 
   /**
@@ -215,7 +193,6 @@ public:
    * event is processed.
    */
   event<Time> operator|(const event<Time> &other) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->sim_.any_of({*this, other});
   }
@@ -228,7 +205,6 @@ public:
    * event are processed.
    */
   event<Time> operator&(const event<Time> &other) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->sim_.all_of({*this, other});
   }
@@ -334,8 +310,7 @@ protected:
    * Set the event state to processed, resume all coroutines awaiting this
    * event, and call all callbacks added to the event.
    */
-  void process() const {
-    assert(awaiting_ev_ == nullptr);
+  void process() {
     assert(data_);
 
     if (processed() || aborted()) {
@@ -409,9 +384,6 @@ protected:
   explicit event(const std::shared_ptr<data> &data_) : data_{data_} {
     assert(data_);
   }
-
-  /// Event associated with the coroutine awaiting this event, if any.
-  event *awaiting_ev_ = nullptr;
 
   /// Shared data of the event.
   std::shared_ptr<data> data_;

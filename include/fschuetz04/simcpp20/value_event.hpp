@@ -7,6 +7,7 @@
 #include <coroutine> // std::suspend_never
 #include <utility>   // std::forward, std::exchange
 
+
 namespace simcpp20 {
 /**
  * One event with a value.
@@ -22,10 +23,9 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit value_event(simulation<Time> &sim) : event<Time> {
-    std::make_shared<data>(sim)
+  explicit value_event(simulation<Time> &sim)
+      : event<Time>{std::make_shared<data>(sim)} {
   }
-  {}
 
   /**
    * Set the event state to triggered, and schedule it to be processed
@@ -37,7 +37,6 @@ public:
    * @param args Arguments to construct the event value with.
    */
   template <typename... Args> void trigger(Args &&...args) const {
-    assert(event<Time>::awaiting_ev_ == nullptr);
     assert(event<Time>::data_);
 
     if (!event<Time>::pending()) {
@@ -64,7 +63,6 @@ public:
 
   /// @return Value of the event.
   const Value &value() const {
-    assert(event<Time>::awaiting_ev_ == nullptr);
     assert(event<Time>::data_);
 
     auto casted_data = static_pointer_cast<data>(event<Time>::data_);
