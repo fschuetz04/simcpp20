@@ -349,7 +349,7 @@ public:
      *
      * @return Awaitable which is always ready.
      */
-    std::suspend_always final_suspend() const noexcept { return {}; }
+    std::suspend_never final_suspend() const noexcept { return {}; }
 
     /// Reference to the simulation.
     simulation<Time> &sim_;
