@@ -42,6 +42,7 @@ public:
     }
 
     set_value(std::forward<Args>(args)...);
+
     event<Time>::trigger();
   }
 
@@ -56,7 +57,16 @@ public:
     assert(event<Time>::data_);
 
     event<Time>::await_resume();
+
     return value();
+  }
+
+  bool await_ready() const {
+    assert(event<Time>::data_);
+
+    auto casted_data = static_pointer_cast<data>(event<Time>::data_);
+
+    return casted_data->value_ != nullptr;
   }
 
   /// @return Value of the event.
@@ -64,6 +74,7 @@ public:
     assert(event<Time>::data_);
 
     auto casted_data = static_pointer_cast<data>(event<Time>::data_);
+
     return *casted_data->value_;
   }
 
@@ -79,7 +90,10 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim} {
+      Value dummy{};
+      ev_.set_value(dummy);
+    }
 
     /**
      * Constructor.
@@ -92,7 +106,10 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim} {
+      Value dummy{};
+      ev_.set_value(dummy);
+    }
 
     /**
      * Constructor.
