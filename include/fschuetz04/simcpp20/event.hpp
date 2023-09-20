@@ -30,7 +30,28 @@ public:
   explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {}
 
   /// Destructor.
-  virtual ~event() {}
+  virtual ~event() {
+    auto temp_data = std::exchange(data_, nullptr);
+    if (!temp_data) {
+      return;
+    }
+
+    if (static_cast<long>(temp_data->handles_.size()) <
+        temp_data.use_count() - 1) {
+      return;
+    }
+
+    // all remaining references to this event belong to suspended processes,
+    // this event will not be processed
+    temp_data->cbs_.clear();
+
+    auto temp_handles = temp_data->handles_;
+    temp_data->handles_.clear();
+
+    for (auto &handle : temp_handles) {
+      handle.destroy();
+    }
+  }
 
   /**
    * Copy constructor.
@@ -109,12 +130,13 @@ public:
 
     data_->state_ = state::aborted;
 
-    for (auto &handle : data_->handles_) {
+    data_->cbs_.clear();
+
+    auto temp_handles = data_->handles_;
+    data_->handles_.clear();
+    for (auto &handle : temp_handles) {
       handle.destroy();
     }
-    data_->handles_.clear();
-
-    data_->cbs_.clear();
   }
 
   /// @param cb Callback to be called when the event is processed.
@@ -186,6 +208,14 @@ public:
     }
 
     data_->handles_.push_back(handle);
+    if (static_cast<long>(data_->handles_.size()) >= data_.use_count()) {
+      // all references to this event belong to a suspended process, so it
+      // will not be processed
+      // TODO: do not abort, just destroy handles?
+      abort();
+      return;
+    }
+
     awaiting_ev_ = &handle.promise().ev_;
   }
 
@@ -200,9 +230,8 @@ public:
       return;
     }
 
-    auto awaiting_ev = std::exchange(awaiting_ev_, nullptr);
-
-    if (awaiting_ev->aborted()) {
+    auto temp_awaiting_ev = std::exchange(awaiting_ev_, nullptr);
+    if (temp_awaiting_ev->aborted()) {
       throw nullptr;
     }
   }
@@ -347,10 +376,11 @@ protected:
 
     data_->state_ = state::processed;
 
-    for (auto &handle : data_->handles_) {
+    auto temp_handles = data_->handles_;
+    data_->handles_.clear();
+    for (auto &handle : temp_handles) {
       handle.resume();
     }
-    data_->handles_.clear();
 
     for (auto &cb : data_->cbs_) {
       cb(*this);
