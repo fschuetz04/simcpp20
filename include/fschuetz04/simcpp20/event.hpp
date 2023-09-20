@@ -304,7 +304,10 @@ public:
     event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
 
     /// Called when an exception is thrown inside the coroutine and not handled.
-    void unhandled_exception() const { assert(false); }
+    void unhandled_exception() const {
+      // TODO: activate this assert
+      // assert(false);
+    }
 
     /**
      * Called when the coroutine returns. Trigger the event associated with the

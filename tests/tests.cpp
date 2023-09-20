@@ -16,6 +16,19 @@ simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
   finished = true;
 };
 
+TEST_CASE("an aborted process does not run") {
+  simcpp20::simulation<> sim;
+
+  auto ev = sim.timeout(1);
+  bool finished = false;
+  auto process_ev = awaiter(sim, ev, -1, finished);
+  process_ev.abort();
+
+  sim.run();
+
+  REQUIRE(!finished);
+}
+
 TEST_CASE("boolean logic") {
   simcpp20::simulation<> sim;
 
