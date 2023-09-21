@@ -16,6 +16,15 @@ simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
   finished = true;
 };
 
+simcpp20::event<> ref_awaiter(simcpp20::simulation<> &sim,
+                              simcpp20::event<> &ev, double target,
+                              bool &finished) {
+  REQUIRE(sim.now() == 0);
+  co_await ev;
+  REQUIRE(sim.now() == target);
+  finished = true;
+}
+
 TEST_CASE("an aborted process does not run") {
   simcpp20::simulation<> sim;
 
@@ -27,6 +36,21 @@ TEST_CASE("an aborted process does not run") {
   sim.run();
 
   REQUIRE(!finished);
+}
+
+TEST_CASE("multiple processes can await the same event reference") {
+  simcpp20::simulation<> sim;
+
+  auto ev = sim.timeout(1);
+  bool finished_a = false;
+  ref_awaiter(sim, ev, 1, finished_a);
+  bool finished_b = false;
+  ref_awaiter(sim, ev, 1, finished_b);
+
+  sim.run();
+
+  REQUIRE(finished_a);
+  REQUIRE(finished_b);
 }
 
 TEST_CASE("boolean logic") {
