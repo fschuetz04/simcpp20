@@ -3,7 +3,6 @@
 
 // See https://simpy.readthedocs.io/en/latest/examples/machine_shop.html
 
-// TODO(fschuetz04): memory leak
 #include <cstdio>
 #include <random>
 

@@ -9,6 +9,7 @@
 #include <functional> // std::greater
 #include <memory>     // std::make_shared, std::make_unique
 #include <queue>      // std::priority_queue
+#include <set>        // std::set
 #include <utility>    // std::forward
 #include <vector>     // std::vector
 
@@ -25,8 +26,6 @@ using id_type = std::uint64_t;
  *
  *     simcpp20::simulation<> sim;
  *
- * TODO(fschuetz04): Keep list of pending events to clear them up?
- *
  * @tparam Time Type used for simulation time.
  */
 template <typename Time = double> class simulation {
@@ -34,6 +33,15 @@ private:
   using event_type = simcpp20::event<Time>;
 
 public:
+  /// Destructor.
+  ~simulation() {
+    std::set<std::coroutine_handle<>> temp_handles;
+    handles_.swap(temp_handles);
+    for (auto &handle : temp_handles) {
+      handle.destroy();
+    }
+  }
+
   /// @return New pending event.
   event_type event() { return event_type{*this}; }
 
@@ -220,12 +228,17 @@ private:
   /// Scheduled events.
   std::priority_queue<scheduled_event, std::vector<scheduled_event>,
                       std::greater<scheduled_event>>
-      scheduled_evs_{};
+      scheduled_evs_;
 
   /// Current simulation time.
   Time now_ = Time{0};
 
   /// Next ID for scheduling an event.
   id_type next_id_ = 0;
+
+  /// Set of coroutine handles belonging to pending processes.
+  std::set<std::coroutine_handle<>> handles_;
+
+  friend class event<Time>::generic_promise_type;
 };
 } // namespace simcpp20

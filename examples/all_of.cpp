@@ -1,8 +1,6 @@
 // Copyright © 2021 Felix Schütz.
 // Licensed under the MIT license. See the LICENSE file for details.
 
-// TODO(fschuetz04): memory leak
-
 #include <cstdio>
 
 #include "fschuetz04/simcpp20.hpp"

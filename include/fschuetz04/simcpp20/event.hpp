@@ -222,10 +222,12 @@ public:
   public:
     /// Constructor.
     generic_promise_type(simulation<Time> &sim, std::coroutine_handle<> handle)
-        : sim_{sim}, handle_{handle} {}
+        : sim_{sim}, handle_{handle} {
+      sim_.handles_.insert(handle_);
+    }
 
     /// Destructor.
-    virtual ~generic_promise_type(){};
+    virtual ~generic_promise_type() { sim_.handles_.erase(handle_); };
 
     /// @return Event associated with the process.
     virtual const event<Time> &process_event() const = 0;
@@ -390,11 +392,7 @@ protected:
     explicit data(simulation<Time> &sim) : sim_{sim} {}
 
     /// Destructor.
-    virtual ~data() {
-      for (auto &promise : promises_) {
-        promise->process_handle().destroy();
-      }
-    }
+    virtual ~data() {}
 
     /// State of the event.
     state state_ = state::pending;
