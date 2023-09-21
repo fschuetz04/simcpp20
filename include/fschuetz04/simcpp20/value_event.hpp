@@ -37,7 +37,6 @@ public:
    * @param args Arguments to construct the event value with.
    */
   template <typename... Args> void trigger(Args &&...args) const {
-    assert(event<Time>::awaiting_ev_ == nullptr);
     assert(event<Time>::data_);
 
     if (!event<Time>::pending()) {
@@ -64,7 +63,6 @@ public:
 
   /// @return Value of the event.
   const Value &value() const {
-    assert(event<Time>::awaiting_ev_ == nullptr);
     assert(event<Time>::data_);
 
     auto casted_data = static_pointer_cast<data>(event<Time>::data_);
@@ -72,8 +70,10 @@ public:
   }
 
   /// Promise type for a coroutine returning a value event.
-  class promise_type {
+  class promise_type : public event<Time>::generic_promise_type {
   public:
+    using handle_type = std::coroutine_handle<promise_type>;
+
     /**
      * Constructor.
      *
@@ -115,6 +115,12 @@ public:
     // IntelliSense fix. See https://stackoverflow.com/q/67209981.
     promise_type();
 #endif
+
+    /// @return Coroutine handle associated with the process.
+    std::coroutine_handle<> process_handle() const override { return handle_; }
+
+    /// @return Event associated with the process.
+    event<Time> process_event() const override { return ev_; }
 
     /**
      * Called to get the return value of the coroutine function.
@@ -161,6 +167,9 @@ public:
      * the coroutine returns with the value the coroutine returns.
      */
     value_event<Value, Time> ev_;
+
+    /// Coroutine handle.
+    handle_type handle_;
   };
 
 private:

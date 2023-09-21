@@ -45,7 +45,6 @@ public:
    * @param other Event to move.
    */
   event(event &&other) noexcept : data_{std::move(other.data_)} {
-    assert(other.awaiting_ev_ == nullptr);
     assert(data_);
   }
 
@@ -68,7 +67,6 @@ public:
    * @return Reference to this instance.
    */
   event &operator=(event &&other) noexcept {
-    assert(other.awaiting_ev_ == nullptr);
     data_ = std::move(other.data_);
     assert(data_);
     return *this;
@@ -81,7 +79,6 @@ public:
    * TODO(fschuetz04): Check whether used on a process?
    */
   void trigger() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (!pending()) {
@@ -100,7 +97,6 @@ public:
    * coroutine?
    */
   void abort() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (!pending()) {
@@ -111,16 +107,15 @@ public:
 
     data_->cbs_.clear();
 
-    auto temp_handles = data_->handles_;
-    data_->handles_.clear();
-    for (auto &handle : temp_handles) {
-      handle.destroy();
+    auto temp_promises = data_->promises_;
+    data_->promises_.clear();
+    for (auto &promise : temp_promises) {
+      promise->process_handle().destroy();
     }
   }
 
   /// @param cb Callback to be called when the event is processed.
   void add_callback(std::function<void(const event<Time> &)> cb) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (processed() || aborted()) {
@@ -132,28 +127,24 @@ public:
 
   /// @return Whether the event is pending.
   bool pending() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::pending;
   }
 
   /// @return Whether the event is triggered or processed.
   bool triggered() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::triggered || processed();
   }
 
   /// @return Whether the event is processed.
   bool processed() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::processed;
   }
 
   /// @return Whether the event is aborted.
   bool aborted() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->state_ == state::aborted;
   }
@@ -165,7 +156,6 @@ public:
    * @return Whether the event is processed.
    */
   bool await_ready() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return processed();
   }
@@ -178,7 +168,6 @@ public:
    */
   template <typename Promise>
   void await_suspend(std::coroutine_handle<Promise> handle) {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (aborted()) {
@@ -186,26 +175,14 @@ public:
       return;
     }
 
-    data_->handles_.push_back(handle);
-    awaiting_ev_ = &handle.promise().ev_;
+    data_->promises_.push_back(&handle.promise());
   }
 
   /**
    * Called when a coroutine is resumed after using co_await on the event or if
    * the coroutine did not need to be suspended.
    */
-  void await_resume() {
-    assert(data_);
-
-    if (awaiting_ev_ == nullptr) {
-      return;
-    }
-
-    auto temp_awaiting_ev = std::exchange(awaiting_ev_, nullptr);
-    if (temp_awaiting_ev->aborted()) {
-      throw nullptr;
-    }
-  }
+  void await_resume() { assert(data_); }
 
   /**
    * Alias for simulation::any_of.
@@ -215,7 +192,6 @@ public:
    * event is processed.
    */
   event<Time> operator|(const event<Time> &other) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->sim_.any_of({*this, other});
   }
@@ -228,7 +204,6 @@ public:
    * event are processed.
    */
   event<Time> operator&(const event<Time> &other) const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
     return data_->sim_.all_of({*this, other});
   }
@@ -242,9 +217,24 @@ public:
     return data_ == other.data_;
   }
 
-  /// Promise type for a coroutine returning an event.
-  class promise_type {
+  /// Abstract base class for all promise types.
+  class generic_promise_type {
   public:
+    /// Destructor.
+    virtual ~generic_promise_type(){};
+
+    /// @return Coroutine handle associated with the process.
+    virtual std::coroutine_handle<> process_handle() const = 0;
+
+    /// @return Event associated with the process.
+    virtual event<Time> process_event() const = 0;
+  };
+
+  /// Promise type for a coroutine returning an event.
+  class promise_type : public generic_promise_type {
+  public:
+    using handle_type = std::coroutine_handle<promise_type>;
+
     /**
      * Constructor.
      *
@@ -254,7 +244,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
 
     /**
      * Constructor.
@@ -267,7 +257,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
 
     /**
      * Constructor.
@@ -280,12 +270,19 @@ public:
      * @param c Class instance.
      */
     template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...) : sim_{c.sim}, ev_{c.sim} {}
+    explicit promise_type(Class &&c, Args &&...)
+        : sim_{c.sim}, ev_{c.sim}, handle_{handle_type::from_promise(*this)} {}
 
 #ifdef __INTELLISENSE__
     // IntelliSense fix. See https://stackoverflow.com/q/67209981.
     promise_type();
 #endif
+
+    /// @return Coroutine handle associated with the process.
+    std::coroutine_handle<> process_handle() const override { return handle_; }
+
+    /// @return Event associated with the process.
+    event<Time> process_event() const override { return ev_; }
 
     /**
      * Called to get the return value of the coroutine function.
@@ -330,6 +327,9 @@ public:
      * coroutine returns.
      */
     event<Time> ev_;
+
+    /// Coroutine handle.
+    handle_type handle_;
   };
 
 protected:
@@ -338,7 +338,6 @@ protected:
    * event, and call all callbacks added to the event.
    */
   void process() const {
-    assert(awaiting_ev_ == nullptr);
     assert(data_);
 
     if (processed() || aborted()) {
@@ -347,10 +346,14 @@ protected:
 
     data_->state_ = state::processed;
 
-    auto temp_handles = data_->handles_;
-    data_->handles_.clear();
-    for (auto &handle : temp_handles) {
-      handle.resume();
+    auto temp_promises = data_->promises_;
+    data_->promises_.clear();
+    for (auto &promise : temp_promises) {
+      if (promise->process_event().aborted()) {
+        promise->process_handle().destroy();
+      } else {
+        promise->process_handle().resume();
+      }
     }
 
     for (auto &cb : data_->cbs_) {
@@ -387,16 +390,16 @@ protected:
 
     /// Destructor.
     virtual ~data() {
-      for (auto &handle : handles_) {
-        handle.destroy();
+      for (auto &promise : promises_) {
+        promise->process_handle().destroy();
       }
     }
 
     /// State of the event.
     state state_ = state::pending;
 
-    /// Handles of coroutines awaiting the event.
-    std::vector<std::coroutine_handle<>> handles_ = {};
+    /// Promises awaiting the event.
+    std::vector<generic_promise_type *> promises_ = {};
 
     /// Callbacks added to the event.
     std::vector<std::function<void(const event<Time> &)>> cbs_ = {};
@@ -413,9 +416,6 @@ protected:
   explicit event(const std::shared_ptr<data> &data_) : data_{data_} {
     assert(data_);
   }
-
-  /// Event associated with the coroutine awaiting this event, if any.
-  event *awaiting_ev_ = nullptr;
 
   /// Shared data of the event.
   std::shared_ptr<data> data_;
