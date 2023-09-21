@@ -147,7 +147,7 @@ public:
      * coroutine with the value returned by the coroutine.
      *
      * @tparam Types of arguments to construct the return value with.
-     * @parma Arguments to construct the return value with.
+     * @param Arguments to construct the return value with.
      */
     template <typename... Args> void return_value(Args &&...args) const {
       ev_.trigger(std::forward<Args>(args)...);
