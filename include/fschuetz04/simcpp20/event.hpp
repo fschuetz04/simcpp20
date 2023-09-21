@@ -430,9 +430,7 @@ template <typename Time> struct hash<simcpp20::event<Time>> {
    * @return Hash of the event.
    */
   std::size_t operator()(const simcpp20::event<Time> &ev) const {
-    static const std::size_t shift =
-        std::log2(1 + sizeof(simcpp20::event<Time>));
-    return reinterpret_cast<std::size_t>(ev.data_) >> shift;
+    return std::hash<decltype(ev.data_.get())>()(ev.data_.get());
   }
 };
 } // namespace std
