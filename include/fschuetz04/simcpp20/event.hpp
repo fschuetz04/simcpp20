@@ -30,28 +30,7 @@ public:
   explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {}
 
   /// Destructor.
-  virtual ~event() {
-    auto temp_data = std::exchange(data_, nullptr);
-    if (!temp_data) {
-      return;
-    }
-
-    if (static_cast<long>(temp_data->handles_.size()) <
-        temp_data.use_count() - 1) {
-      return;
-    }
-
-    // all remaining references to this event belong to suspended processes,
-    // this event will not be processed
-    temp_data->cbs_.clear();
-
-    auto temp_handles = temp_data->handles_;
-    temp_data->handles_.clear();
-
-    for (auto &handle : temp_handles) {
-      handle.destroy();
-    }
-  }
+  virtual ~event() {}
 
   /**
    * Copy constructor.
@@ -208,14 +187,6 @@ public:
     }
 
     data_->handles_.push_back(handle);
-    if (static_cast<long>(data_->handles_.size()) >= data_.use_count()) {
-      // all references to this event belong to a suspended process, so it
-      // will not be processed
-      // TODO: do not abort, just destroy handles?
-      abort();
-      return;
-    }
-
     awaiting_ev_ = &handle.promise().ev_;
   }
 
