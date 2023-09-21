@@ -120,7 +120,7 @@ public:
     std::coroutine_handle<> process_handle() const override { return handle_; }
 
     /// @return Event associated with the process.
-    event<Time> process_event() const override { return ev_; }
+    const event<Time> &process_event() const override { return ev_; }
 
     /**
      * Called to get the return value of the coroutine function.
