@@ -83,7 +83,9 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
+        : event<Time>::generic_promise_type{sim,
+                                            handle_type::from_promise(*this)},
+          ev_{sim} {}
 
     /**
      * Constructor.
@@ -96,7 +98,9 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
+        : event<Time>::generic_promise_type{sim,
+                                            handle_type::from_promise(*this)},
+          ev_{sim} {}
 
     /**
      * Constructor.
@@ -110,15 +114,14 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&c, Args &&...)
-        : sim_{c.sim}, ev_{c.sim}, handle_{handle_type::from_promise(*this)} {}
+        : event<Time>::generic_promise_type{c.sim,
+                                            handle_type::from_promise(*this)},
+          ev_{c.sim} {}
 
 #ifdef __INTELLISENSE__
     // IntelliSense fix. See https://stackoverflow.com/q/67209981.
     promise_type();
 #endif
-
-    /// @return Coroutine handle associated with the process.
-    std::coroutine_handle<> process_handle() const override { return handle_; }
 
     /// @return Event associated with the process.
     const event<Time> &process_event() const override { return ev_; }
@@ -132,17 +135,6 @@ public:
     value_event<Value, Time> get_return_object() const { return ev_; }
 
     /**
-     * Called when the coroutine is started. The coroutine awaits the return
-     * value before running.
-     *
-     * @return Event which will be processed at the current simulation time.
-     */
-    event<Time> initial_suspend() const { return sim_.timeout(Time{0}); }
-
-    /// Called when an exception is thrown inside the coroutine and not handled.
-    void unhandled_exception() const { assert(false); }
-
-    /**
      * Called when the coroutine returns. Trigger the event associated with the
      * coroutine with the value returned by the coroutine.
      *
@@ -154,23 +146,10 @@ public:
     }
 
     /**
-     * Called after the coroutine returns.
-     *
-     * @return Awaitable which is always ready.
-     */
-    std::suspend_never final_suspend() const noexcept { return {}; }
-
-    /// Reference to the simulation.
-    simulation<Time> &sim_;
-
-    /**
      * Value event associated with the coroutine. This event is triggered when
      * the coroutine returns with the value the coroutine returns.
      */
     value_event<Value, Time> ev_;
-
-    /// Coroutine handle.
-    handle_type handle_;
   };
 
 private:
