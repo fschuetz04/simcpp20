@@ -4,12 +4,11 @@
 // See https://simpy.readthedocs.io/en/latest/examples/machine_shop.html
 
 // TODO(fschuetz04): memory leak
+#include <cstdio>
+#include <random>
 
 #include "fschuetz04/simcpp20.hpp"
 #include "resource.hpp"
-
-#include <cstdio>
-#include <random>
 
 struct config {
   double repair_time;
