@@ -107,8 +107,8 @@ public:
 
     data_->cbs_.clear();
 
-    auto temp_promises = data_->promises_;
-    data_->promises_.clear();
+    std::vector<generic_promise_type *> temp_promises;
+    data_->promises_.swap(temp_promises);
     for (auto &promise : temp_promises) {
       promise->process_handle().destroy();
     }
@@ -346,8 +346,8 @@ protected:
 
     data_->state_ = state::processed;
 
-    auto temp_promises = data_->promises_;
-    data_->promises_.clear();
+    std::vector<generic_promise_type *> temp_promises;
+    data_->promises_.swap(temp_promises);
     for (auto &promise : temp_promises) {
       if (promise->process_event().aborted()) {
         promise->process_handle().destroy();
