@@ -239,6 +239,6 @@ private:
   /// Set of coroutine handles belonging to pending processes.
   std::set<std::coroutine_handle<>> handles_;
 
-  friend class event<Time>::generic_promise_type;
+  friend class event_type::generic_promise_type;
 };
 } // namespace simcpp20
