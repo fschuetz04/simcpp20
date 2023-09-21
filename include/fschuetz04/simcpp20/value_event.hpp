@@ -83,7 +83,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
 
     /**
      * Constructor.
@@ -96,7 +96,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : sim_{sim}, ev_{sim} {}
+        : sim_{sim}, ev_{sim}, handle_{handle_type::from_promise(*this)} {}
 
     /**
      * Constructor.
@@ -109,7 +109,8 @@ public:
      * @param c Class instance.
      */
     template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...) : sim_{c.sim}, ev_{c.sim} {}
+    explicit promise_type(Class &&c, Args &&...)
+        : sim_{c.sim}, ev_{c.sim}, handle_{handle_type::from_promise(*this)} {}
 
 #ifdef __INTELLISENSE__
     // IntelliSense fix. See https://stackoverflow.com/q/67209981.
