@@ -1,9 +1,6 @@
 // Copyright © 2021 Felix Schütz.
 // Licensed under the MIT license. See the LICENSE file for details.
 
-#include <algorithm>
-#include <iostream>
-
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/generators/catch_generators.hpp"
 #include "fschuetz04/simcpp20.hpp"
