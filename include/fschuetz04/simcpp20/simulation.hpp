@@ -83,7 +83,7 @@ public:
    * @return New pending event which is triggered when any of the given events
    * is processed.
    */
-  event_type any_of(const std::vector<event_type> &evs) {
+  event_type any_of(std::initializer_list<event_type> evs) {
     if (evs.size() == 0) {
       return timeout(0);
     }
@@ -137,7 +137,7 @@ public:
    * @return New pending event which is triggered when all of the given events
    * are processed.
    */
-  event_type all_of(const std::vector<event_type> &evs) {
+  event_type all_of(std::initializer_list<event_type> evs) {
     size_t n = evs.size();
 
     for (const auto &ev : evs) {
