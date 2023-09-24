@@ -69,6 +69,19 @@ public:
     return *casted_data->value_;
   }
 
+  /**
+   * Alias for simulation::any_of.
+   *
+   * @param other Other event.
+   * @return New pending event which is triggered when this event or the other
+   * event is processed.
+   */
+  value_event<Value, Time>
+  operator|(const value_event<Value, Time> &other) const {
+    assert(event<Time>::data_);
+    return event<Time>::data_->sim_.any_of({*this, other});
+  }
+
   /// Promise type for a coroutine returning a value event.
   class promise_type : public event<Time>::generic_promise_type {
   public:

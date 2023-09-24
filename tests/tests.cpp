@@ -109,14 +109,28 @@ TEST_CASE("any_of with value_event") {
   auto ev_a = sim.timeout<std::string>(delay_a, value_a);
   std::string value_b = "b";
   auto ev_b = sim.timeout<std::string>(3 - delay_a, value_b);
-  auto ev = sim.any_of({ev_a, ev_b});
-  auto expected_value = delay_a == 1 ? value_a : value_b;
-  bool finished = false;
-  value_awaiter(sim, ev, expected_value, 1, finished);
 
-  sim.run();
+  SECTION("any_of is triggered when the first event is processed") {
+    auto ev = sim.any_of({ev_a, ev_b});
+    auto expected_value = delay_a == 1 ? value_a : value_b;
+    bool finished = false;
+    value_awaiter(sim, ev, expected_value, 1, finished);
 
-  REQUIRE(finished);
+    sim.run();
+
+    REQUIRE(finished);
+  }
+
+  SECTION("| is an alias for any_of") {
+    auto ev = ev_a | ev_b;
+    auto expected_value = delay_a == 1 ? value_a : value_b;
+    bool finished = false;
+    value_awaiter(sim, ev, expected_value, 1, finished);
+
+    sim.run();
+
+    REQUIRE(finished);
+  }
 }
 
 TEST_CASE("all_of") {
