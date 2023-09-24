@@ -56,7 +56,7 @@ TEST_CASE("any_of") {
   simcpp20::simulation<> sim;
 
   SECTION("any_of is not triggered when all events are never processed") {
-    auto ev = sim.any_of({sim.event(), sim.event()});
+    auto ev = sim.any_of(sim.event(), sim.event());
     bool finished = false;
     awaiter(sim, ev, -1, finished);
 
@@ -70,7 +70,7 @@ TEST_CASE("any_of") {
   auto ev_b = sim.timeout(3 - a);
 
   SECTION("any_of is triggered when the first event is processed") {
-    auto ev = sim.any_of({ev_a, ev_b});
+    auto ev = sim.any_of(ev_a, ev_b);
     bool finished = false;
     awaiter(sim, ev, 1, finished);
 
@@ -111,7 +111,7 @@ TEST_CASE("any_of with value_event") {
   auto ev_b = sim.timeout<std::string>(3 - delay_a, value_b);
 
   SECTION("any_of is triggered when the first event is processed") {
-    auto ev = sim.any_of({ev_a, ev_b});
+    auto ev = sim.any_of<std::string>(ev_a, ev_b);
     auto expected_value = delay_a == 1 ? value_a : value_b;
     bool finished = false;
     value_awaiter(sim, ev, expected_value, 1, finished);
@@ -137,7 +137,7 @@ TEST_CASE("all_of") {
   simcpp20::simulation<> sim;
 
   SECTION("all_of is not triggered when one event is never processed") {
-    auto ev = sim.all_of({sim.timeout(1), sim.event()});
+    auto ev = sim.all_of(sim.timeout(1), sim.event());
     bool finished = false;
     awaiter(sim, ev, -1, finished);
 
@@ -151,7 +151,7 @@ TEST_CASE("all_of") {
   auto ev_b = sim.timeout(3 - delay_a);
 
   SECTION("all_of is triggered when all events are processed") {
-    auto ev = sim.all_of({ev_a, ev_b});
+    auto ev = sim.all_of(ev_a, ev_b);
     bool finished = false;
     awaiter(sim, ev, 2, finished);
 

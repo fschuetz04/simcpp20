@@ -193,7 +193,7 @@ public:
    */
   event<Time> operator|(const event<Time> &other) const {
     assert(data_);
-    return data_->sim_.any_of({*this, other});
+    return data_->sim_.any_of(*this, other);
   }
 
   /**
@@ -205,7 +205,7 @@ public:
    */
   event<Time> operator&(const event<Time> &other) const {
     assert(data_);
-    return data_->sim_.all_of({*this, other});
+    return data_->sim_.all_of(*this, other);
   }
 
   /** Comparison operator.

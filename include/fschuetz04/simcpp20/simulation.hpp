@@ -83,25 +83,8 @@ public:
    * @return New pending event which is triggered when any of the given events
    * is processed.
    */
-  event_type any_of(std::initializer_list<event_type> evs) {
-    if (evs.size() == 0) {
-      return timeout(0);
-    }
-
-    for (const auto &ev : evs) {
-      if (ev.processed()) {
-        return ev;
-      }
-    }
-
-    auto any_of_ev = event();
-
-    for (const auto &ev : evs) {
-      ev.add_callback(
-          [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
-    }
-
-    return any_of_ev;
+  template <typename... Args> event_type any_of(Args &&...evs) {
+    return any_of_internal(event(), std::forward<Args>(evs)...);
   }
 
   /**
@@ -110,26 +93,9 @@ public:
    * @return New pending value event which is triggered when any of the given
    * events is processed.
    */
-  template <typename Value>
-  value_event<Value, Time>
-  any_of(std::initializer_list<value_event<Value, Time>> evs) {
-    assert(evs.size() > 0);
-
-    for (const auto &ev : evs) {
-      if (ev.processed()) {
-        return ev;
-      }
-    }
-
-    auto any_of_ev = event<Value>();
-
-    for (const auto &ev : evs) {
-      ev.add_callback([any_of_ev, ev](const auto &) mutable {
-        any_of_ev.trigger(ev.value());
-      });
-    }
-
-    return any_of_ev;
+  template <typename Value, typename... Args>
+  value_event<Value, Time> any_of(Args &&...evs) {
+    return any_of_internal(event<Value>(), std::forward<Args>(evs)...);
   }
 
   /**
@@ -137,32 +103,9 @@ public:
    * @return New pending event which is triggered when all of the given events
    * are processed.
    */
-  event_type all_of(std::initializer_list<event_type> evs) {
-    size_t n = evs.size();
-
-    for (const auto &ev : evs) {
-      if (ev.processed()) {
-        --n;
-      }
-    }
-
-    if (n == 0) {
-      return timeout(0);
-    }
-
-    auto all_of_ev = event();
-    auto n_ptr = std::make_shared<std::size_t>(n);
-
-    for (const auto &ev : evs) {
-      ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
-        --*n_ptr;
-        if (*n_ptr == 0) {
-          all_of_ev.trigger();
-        }
-      });
-    }
-
-    return all_of_ev;
+  template <typename... Args> event_type all_of(Args &&...evs) {
+    auto n_ptr = std::make_shared<std::size_t>(0);
+    return all_of_internal(event(), n_ptr, std::forward<Args>(evs)...);
   }
 
   /**
@@ -215,6 +158,106 @@ public:
   Time now() const { return now_; }
 
 private:
+  /**
+   * Consumes one event for `any_of` and forwards the remaining events.
+   *
+   * @tparam Event Type of the current event.
+   * @tparam Args Type of the remaining events.
+   * @param any_of_ev Event to trigger when any one of the events is processed.
+   * @param current_ev Event to consume.
+   * @param next_evs Remaining events to forward.
+   * @return Event that is triggered when any one of the events is processed.
+   */
+  template <typename Event, typename... Args>
+  Event any_of_internal(Event any_of_ev, Event current_ev, Args &&...next_evs) {
+    any_of_internal(any_of_ev, current_ev);
+    return any_of_internal(any_of_ev, std::forward<Args>(next_evs)...);
+  }
+
+  /**
+   * Consumes the final event for `any_of`.
+   *
+   * @param any_of_ev Event to trigger when any one of the events is processed.
+   * @param current_ev Event to consume.
+   * @return Event that is triggered when any one of the events is processed.
+   */
+  event_type any_of_internal(event_type any_of_ev, event_type current_ev) {
+    if (current_ev.processed()) {
+      any_of_ev.trigger();
+    } else {
+      current_ev.add_callback(
+          [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
+    }
+
+    return any_of_ev;
+  }
+
+  /**
+   * Consumes the final event for `any_of` with `value_event`.
+   *
+   * @tparam Value Value type of `value_event`.
+   * @param any_of_ev Event to trigger when any one of the events is processed.
+   * @param current_ev Event to consume.
+   * @return Event that is triggered when any one of the events is processed.
+   */
+  template <typename Value>
+  value_event<Value, Time>
+  any_of_internal(value_event<Value, Time> any_of_ev,
+                  value_event<Value, Time> current_ev) {
+    if (current_ev.processed()) {
+      any_of_ev.trigger(current_ev.value());
+    } else {
+      current_ev.add_callback([any_of_ev, current_ev](const auto &) mutable {
+        any_of_ev.trigger(current_ev.value());
+      });
+    }
+
+    return any_of_ev;
+  }
+
+  /**
+   * Consumes one event for `all_of` and forwards the remaining events.
+   *
+   * @tparam Args Type of the remaining events.
+   * @param all_of_ev Event to trigger when all of the events are processed.
+   * @param n_ptr Number of events not yet processed.
+   * @param current_ev Event to consume.
+   * @param next_evs Remaining events to forward.
+   * @return Event that is triggered when all of the events are processed.
+   */
+  template <typename... Args>
+  event_type all_of_internal(event_type all_of_ev,
+                             std::shared_ptr<size_t> n_ptr,
+                             event_type current_ev, Args &&...next_evs) {
+    all_of_internal(all_of_ev, n_ptr, current_ev);
+    return all_of_internal(all_of_ev, n_ptr, std::forward<Args>(next_evs)...);
+  }
+
+  /**
+   * Consumes the final event for `all_of`.
+   *
+   * @param all_of_ev Event to trigger when all of the events are processed.
+   * @param n_ptr Number of events not yet processed.
+   * @param current_ev Event to consume.
+   * @return Event that is triggered when all of the events are processed.
+   */
+  event_type all_of_internal(event_type all_of_ev,
+                             std::shared_ptr<size_t> n_ptr,
+                             event_type current_ev) {
+    if (!current_ev.processed()) {
+      ++*n_ptr;
+
+      current_ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
+        --*n_ptr;
+        if (*n_ptr == 0) {
+          all_of_ev.trigger();
+        }
+      });
+    }
+
+    return all_of_ev;
+  }
+
   /// One event scheduled to be processed.
   class scheduled_event {
   public:

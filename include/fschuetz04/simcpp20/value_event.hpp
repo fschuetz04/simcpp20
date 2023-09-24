@@ -79,7 +79,7 @@ public:
   value_event<Value, Time>
   operator|(const value_event<Value, Time> &other) const {
     assert(event<Time>::data_);
-    return event<Time>::data_->sim_.any_of({*this, other});
+    return event<Time>::data_->sim_.template any_of<Value>(*this, other);
   }
 
   /// Promise type for a coroutine returning a value event.
