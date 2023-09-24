@@ -5,20 +5,22 @@
 #include "catch2/generators/catch_generators.hpp"
 #include "fschuetz04/simcpp20.hpp"
 
+#include <string> // std::string
+
 simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
-                          double target, bool &finished) {
+                          double expected_time, bool &finished) {
   REQUIRE(sim.now() == 0);
   co_await ev;
-  REQUIRE(sim.now() == target);
+  REQUIRE(sim.now() == expected_time);
   finished = true;
 };
 
 simcpp20::event<> ref_awaiter(simcpp20::simulation<> &sim,
-                              simcpp20::event<> &ev, double target,
+                              simcpp20::event<> &ev, double expected_time,
                               bool &finished) {
   REQUIRE(sim.now() == 0);
   co_await ev;
-  REQUIRE(sim.now() == target);
+  REQUIRE(sim.now() == expected_time);
   finished = true;
 }
 
@@ -88,6 +90,35 @@ TEST_CASE("any_of") {
   }
 }
 
+template <typename Value>
+simcpp20::event<>
+value_awaiter(simcpp20::simulation<> &sim, simcpp20::value_event<Value> ev,
+              Value expected_value, double expected_time, bool &finished) {
+  REQUIRE(sim.now() == 0);
+  Value value = co_await ev;
+  REQUIRE(value == expected_value);
+  REQUIRE(sim.now() == expected_time);
+  finished = true;
+};
+
+TEST_CASE("any_of with value_event") {
+  simcpp20::simulation<> sim;
+
+  double delay_a = GENERATE(1, 2);
+  std::string value_a = "a";
+  auto ev_a = sim.timeout<std::string>(delay_a, value_a);
+  std::string value_b = "b";
+  auto ev_b = sim.timeout<std::string>(3 - delay_a, value_b);
+  auto ev = sim.any_of({ev_a, ev_b});
+  auto expected_value = delay_a == 1 ? value_a : value_b;
+  bool finished = false;
+  value_awaiter(sim, ev, expected_value, 1, finished);
+
+  sim.run();
+
+  REQUIRE(finished);
+}
+
 TEST_CASE("all_of") {
   simcpp20::simulation<> sim;
 
@@ -101,9 +132,9 @@ TEST_CASE("all_of") {
     REQUIRE(!finished);
   }
 
-  double a = GENERATE(1, 2);
-  auto ev_a = sim.timeout(a);
-  auto ev_b = sim.timeout(3 - a);
+  double delay_a = GENERATE(1, 2);
+  auto ev_a = sim.timeout(delay_a);
+  auto ev_b = sim.timeout(3 - delay_a);
 
   SECTION("all_of is triggered when all events are processed") {
     auto ev = sim.all_of({ev_a, ev_b});

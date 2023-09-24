@@ -3,15 +3,16 @@
 
 #pragma once
 
-#include <cassert>    // assert
-#include <cstddef>    // std::size_t
-#include <cstdint>    // std::uint64_t
-#include <functional> // std::greater
-#include <memory>     // std::make_shared, std::make_unique
-#include <queue>      // std::priority_queue
-#include <set>        // std::set
-#include <utility>    // std::forward
-#include <vector>     // std::vector
+#include <cassert>          // assert
+#include <cstddef>          // std::size_t
+#include <cstdint>          // std::uint64_t
+#include <functional>       // std::greater
+#include <initializer_list> // std::initializer_list
+#include <memory>           // std::make_shared, std::make_unique
+#include <queue>            // std::priority_queue
+#include <set>              // std::set
+#include <utility>          // std::forward
+#include <vector>           // std::vector
 
 #include "event.hpp"
 #include "value_event.hpp"
@@ -89,7 +90,7 @@ public:
 
     for (const auto &ev : evs) {
       if (ev.processed()) {
-        return timeout(0);
+        return ev;
       }
     }
 
@@ -98,6 +99,34 @@ public:
     for (const auto &ev : evs) {
       ev.add_callback(
           [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
+    }
+
+    return any_of_ev;
+  }
+
+  /**
+   * @tparam Value Value type of the event.
+   * @param evs List of events.
+   * @return New pending value event which is triggered when any of the given
+   * events is processed.
+   */
+  template <typename Value>
+  value_event<Value, Time>
+  any_of(std::initializer_list<value_event<Value, Time>> evs) {
+    assert(evs.size() > 0);
+
+    for (const auto &ev : evs) {
+      if (ev.processed()) {
+        return ev;
+      }
+    }
+
+    auto any_of_ev = event<Value>();
+
+    for (const auto &ev : evs) {
+      ev.add_callback([any_of_ev, ev](const auto &) mutable {
+        any_of_ev.trigger(ev.value());
+      });
     }
 
     return any_of_ev;
