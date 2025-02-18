@@ -83,9 +83,7 @@ target_link_libraries(app PRIVATE fschuetz04::simcpp20)
 
 Replace the commit hash with the latest commit hash of SimCpp20 accordingly.
 
-## Copyright and License
-
-Copyright © 2021 Felix Schütz.
+## License
 
 Licensed under the MIT License.
-See the `LICENSE` file for details.
+See the [licence file](LICENSE) for details.

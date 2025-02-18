@@ -1,6 +1,3 @@
-// Copyright © 2021 Felix Schütz.
-// Licensed under the MIT license. See the LICENSE file for details.
-
 // See https://simpy.readthedocs.io/en/latest/examples/bank_renege.html
 
 #include <cstdio>
