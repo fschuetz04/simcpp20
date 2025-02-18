@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...3.27)
+cmake_minimum_required(VERSION 3.14...3.31)
 
 if(DEFINED PROJECT_NAME)
   set(MAIN_PROJECT OFF)
