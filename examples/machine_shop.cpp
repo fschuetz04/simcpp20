@@ -85,7 +85,10 @@ int main() {
   sim.run_until(n_weeks * 7 * 24 * 60);
 
   printf("Machine shop results after %d weeks:\n", n_weeks);
+  int total = 0;
   for (int i = 0; i < n_machines; ++i) {
     printf("- Machine %d made %d parts\n", i, machines[i].n_parts_made);
+    total += machines[i].n_parts_made;
   }
+  printf("Total: %d\n", total);
 }

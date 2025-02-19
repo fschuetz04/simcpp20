@@ -6,10 +6,12 @@
 SimCpp20 is a discrete-event simulation framework for C++20.
 It is similar to SimPy and aims to be easy to set up and use.
 
-Processes are defined as functions receiving `simcpp20::simulation<> &` as their first argument and returning `simcpp20::event<>`.
+Processes are defined as functions receiving `simcpp20::simulation<> &` as their
+first argument and returning `simcpp20::event<>`.
 Each process is executed as a coroutine.
 Thus, this framework requires C++20.
-A short example simulating two clocks ticking in different time intervals looks like this:
+A short example simulating two clocks ticking in different time intervals looks like
+this:
 
 ```c++
 #include <cstdio>
@@ -56,12 +58,17 @@ cmake --build build
 build/examples/clocks
 ```
 
-The CMake configuration has been tested with GCC (version 10 or later), Clang (version 14 or later) and MSVC.
-If such a version is available under a different name (for example `g++-10`), you can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler command.
-When using an MSVC compiler, it must be of version 19.28 or later (Visual Studio 2019 version 16.8 or later).
+The CMake configuration has been tested with GCC (version 10 or later), Clang (version
+14 or later) and MSVC.
+If such a version is available under a different name (for example `g++-10`), you
+can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler
+command.
+When using an MSVC compiler, it must be of version 19.28 or later (Visual Studio
+2019 version 16.8 or later).
 Contributions to improve compiler support are welcome!
 
-If you want to use SimCpp20 in your project, the easiest option is to use CMake with FetchContent.
+If you want to use SimCpp20 in your project, the easiest option is to use CMake with
+FetchContent.
 A simple configuration looks like this:
 
 ```cmake
