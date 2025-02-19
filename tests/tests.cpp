@@ -157,7 +157,7 @@ TEST_CASE("all_of") {
     REQUIRE(finished);
   }
 
-  SECTION("& is an alias for any_of") {
+  SECTION("& is an alias for all_of") {
     auto ev = ev_a & ev_b;
     bool finished = false;
     awaiter(sim, ev, 2, finished);
