@@ -5,6 +5,7 @@
 #include <utility>    // std::forward
 
 #include "process.hpp"
+#include "promise_type.hpp"
 #include "value_event.hpp"
 
 namespace simcpp20 {
@@ -121,13 +122,15 @@ protected:
    */
   const value_event<Value, Time> &get_event() const { return event_; }
 
-protected:
   /// Internal event used to implement process behavior
   value_event<Value, Time> event_;
 
+private:
+  using generic_promise_type = internal::generic_promise_type<Time>;
+
 public:
   /// Promise type for a coroutine returning a value_process.
-  class promise_type : public event<Time>::generic_promise_type {
+  class promise_type : public generic_promise_type {
   public:
     using handle_type = std::coroutine_handle<promise_type>;
 
@@ -140,8 +143,7 @@ public:
      */
     template <typename... Args>
     explicit promise_type(simulation<Time> &sim, Args &&...)
-        : event<Time>::generic_promise_type{sim,
-                                            handle_type::from_promise(*this)},
+        : generic_promise_type{sim, handle_type::from_promise(*this)},
           proc_{sim} {}
 
     /**
@@ -155,8 +157,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : event<Time>::generic_promise_type{sim,
-                                            handle_type::from_promise(*this)},
+        : generic_promise_type{sim, handle_type::from_promise(*this)},
           proc_{sim} {}
 
     /**
@@ -171,8 +172,7 @@ public:
      */
     template <typename Class, typename... Args>
     explicit promise_type(Class &&c, Args &&...)
-        : event<Time>::generic_promise_type{c.sim,
-                                            handle_type::from_promise(*this)},
+        : generic_promise_type{c.sim, handle_type::from_promise(*this)},
           proc_{c.sim} {}
 
 #ifdef __INTELLISENSE__

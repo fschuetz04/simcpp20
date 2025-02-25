@@ -13,6 +13,7 @@
 
 #include "event.hpp"
 #include "process.hpp"
+#include "promise_type.hpp"
 #include "value_event.hpp"
 
 namespace simcpp20 {
@@ -309,6 +310,6 @@ private:
   /// Set of coroutine handles belonging to pending processes.
   std::set<std::coroutine_handle<>> handles_;
 
-  friend class event_type::generic_promise_type;
+  friend class internal::generic_promise_type<Time>;
 };
 } // namespace simcpp20
