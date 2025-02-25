@@ -1,9 +1,9 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 
-simcpp20::event<> clock_proc(simcpp20::simulation<> &sim, char const *name,
-                             double delay) {
+simcpp20::process<> clock_proc(simcpp20::simulation<> &sim, char const *name,
+                               double delay) {
   while (true) {
     printf("[%.0f] %s\n", sim.now(), name);
     co_await sim.timeout(delay);

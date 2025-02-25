@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 
 struct ev_type;
 using ev_inner = simcpp20::value_event<ev_type>;
@@ -8,8 +8,9 @@ struct ev_type {
   ev_inner ev;
 };
 
-simcpp20::event<> party(simcpp20::simulation<> &sim, const char *name,
-                        simcpp20::value_event<ev_type> my_event, double delay) {
+simcpp20::process<> party(simcpp20::simulation<> &sim, const char *name,
+                          simcpp20::value_event<ev_type> my_event,
+                          double delay) {
   while (true) {
     auto their_event = (co_await my_event).ev;
     printf("[%.0f] %s\n", sim.now(), name);

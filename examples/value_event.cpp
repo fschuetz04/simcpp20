@@ -1,9 +1,9 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 
-simcpp20::event<> consumer(simcpp20::simulation<> &sim,
-                           simcpp20::value_event<int> ev) {
+simcpp20::process<> consumer(simcpp20::simulation<> &sim,
+                             simcpp20::value_event<int> ev) {
   auto val = co_await ev;
   printf("[%.0f] val = %d\n", sim.now(), val);
 }

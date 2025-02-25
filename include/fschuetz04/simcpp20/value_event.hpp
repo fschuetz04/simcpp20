@@ -1,8 +1,10 @@
 #pragma once
 
-#include <cassert>   // assert
-#include <coroutine> // std::suspend_never
-#include <utility>   // std::forward, std::exchange
+#include <cassert> // assert
+#include <memory>  // std::make_shared, std::shared_ptr
+#include <utility> // std::forward, std::exchange
+
+#include "event.hpp"
 
 namespace simcpp20 {
 /**
@@ -19,16 +21,12 @@ public:
    *
    * @param simulation Reference to the simulation.
    */
-  explicit value_event(simulation<Time> &sim) : event<Time> {
-    std::make_shared<data>(sim)
-  }
-  {}
+  explicit value_event(simulation<Time> &sim)
+      : event<Time>{std::make_shared<data>(sim)} {}
 
   /**
    * Set the event state to triggered, and schedule it to be processed
    * immediately. If the event is not pending, nothing is done.
-   *
-   * TODO(fschuetz04): Check whether used on a process?
    *
    * @tparam Types of arguments to construct the event value with.
    * @param args Arguments to construct the event value with.
@@ -78,89 +76,6 @@ public:
     assert(event<Time>::data_);
     return event<Time>::data_->sim_.template any_of<Value>(*this, other);
   }
-
-  /// Promise type for a coroutine returning a value event.
-  class promise_type : public event<Time>::generic_promise_type {
-  public:
-    using handle_type = std::coroutine_handle<promise_type>;
-
-    /**
-     * Constructor.
-     *
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param sim Reference to the simulation.
-     */
-    template <typename... Args>
-    explicit promise_type(simulation<Time> &sim, Args &&...)
-        : event<Time>::generic_promise_type{sim,
-                                            handle_type::from_promise(*this)},
-          ev_{sim} {}
-
-    /**
-     * Constructor.
-     *
-     * @tparam Class Class type if the coroutine function is a lambda or a
-     * member function of a class.
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param sim Reference to the simulation.
-     */
-    template <typename Class, typename... Args>
-    explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : event<Time>::generic_promise_type{sim,
-                                            handle_type::from_promise(*this)},
-          ev_{sim} {}
-
-    /**
-     * Constructor.
-     *
-     * @tparam Class Class type if the coroutine function is a member function
-     * of a class. Must contain a member variable sim referencing the simulation
-     * instance.
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param c Class instance.
-     */
-    template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...)
-        : event<Time>::generic_promise_type{c.sim,
-                                            handle_type::from_promise(*this)},
-          ev_{c.sim} {}
-
-#ifdef __INTELLISENSE__
-    // IntelliSense fix. See https://stackoverflow.com/q/67209981.
-    promise_type();
-#endif
-
-    /// @return Event associated with the process.
-    const event<Time> &process_event() const override { return ev_; }
-
-    /**
-     * Called to get the return value of the coroutine function.
-     *
-     * @return Value event associated with the coroutine. This event is
-     * triggered when the coroutine returns with the value it returns.
-     */
-    value_event<Value, Time> get_return_object() const { return ev_; }
-
-    /**
-     * Called when the coroutine returns. Trigger the event associated with the
-     * coroutine with the value returned by the coroutine.
-     *
-     * @tparam Types of arguments to construct the return value with.
-     * @param Arguments to construct the return value with.
-     */
-    template <typename... Args> void return_value(Args &&...args) const {
-      ev_.trigger(std::forward<Args>(args)...);
-    }
-
-    /**
-     * Value event associated with the coroutine. This event is triggered when
-     * the coroutine returns with the value the coroutine returns.
-     */
-    value_event<Value, Time> ev_;
-  };
 
 private:
   /// Shared data of the event.

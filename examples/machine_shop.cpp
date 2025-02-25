@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <random>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 #include "resource.hpp"
 
 struct config {
@@ -26,7 +26,7 @@ public:
   simcpp20::simulation<> &sim;
 
 private:
-  simcpp20::event<> produce() {
+  simcpp20::process<> produce() {
     while (true) {
       double time_for_part = conf.time_for_part_dist(conf.gen);
 
@@ -50,7 +50,7 @@ private:
     }
   }
 
-  simcpp20::event<> fail() {
+  simcpp20::process<> fail() {
     while (true) {
       co_await sim.timeout(conf.time_to_failure_dist(conf.gen));
       failure.trigger();

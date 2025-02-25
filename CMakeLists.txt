@@ -4,6 +4,7 @@ if(DEFINED PROJECT_NAME)
   set(MAIN_PROJECT OFF)
 else()
   set(MAIN_PROJECT ON)
+  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endif()
 
 project(simcpp20
@@ -23,3 +24,4 @@ option(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES "Build examples" ${MAIN_PROJECT})
 if(FSCHUETZ04_SIMCPP20_BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
+

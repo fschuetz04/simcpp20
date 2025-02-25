@@ -1,17 +1,18 @@
 #pragma once
 
-#include <cassert>          // assert
-#include <cstddef>          // std::size_t
-#include <cstdint>          // std::uint64_t
-#include <functional>       // std::greater
-#include <initializer_list> // std::initializer_list
-#include <memory>           // std::make_shared, std::make_unique
-#include <queue>            // std::priority_queue
-#include <set>              // std::set
-#include <utility>          // std::forward
-#include <vector>           // std::vector
+#include <cassert>    // assert
+#include <coroutine>  // std::coroutine_handle
+#include <cstddef>    // std::size_t
+#include <cstdint>    // std::uint64_t
+#include <functional> // std::greater
+#include <memory>     // std::make_shared, std::make_unique
+#include <queue>      // std::priority_queue
+#include <set>        // std::set
+#include <utility>    // std::forward
+#include <vector>     // std::vector
 
 #include "event.hpp"
+#include "process.hpp"
 #include "value_event.hpp"
 
 namespace simcpp20 {
@@ -29,6 +30,7 @@ using id_type = std::uint64_t;
 template <typename Time = double> class simulation {
 private:
   using event_type = simcpp20::event<Time>;
+  using process_type = simcpp20::process<Time>;
 
 public:
   /// Destructor.
@@ -245,8 +247,7 @@ private:
       ++*n_ptr;
 
       current_ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
-        --*n_ptr;
-        if (*n_ptr == 0) {
+        if (--*n_ptr == 0) {
           all_of_ev.trigger();
         }
       });

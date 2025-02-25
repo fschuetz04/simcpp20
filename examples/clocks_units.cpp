@@ -1,16 +1,15 @@
 #include <iostream>
-#include <string>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 #include "units.h"
 
 using namespace units::literals;
 
 using time_type = units::time::second_t;
-using event = simcpp20::event<time_type>;
+using process = simcpp20::process<time_type>;
 using simulation = simcpp20::simulation<time_type>;
 
-event clock_proc(simulation &sim, char const *name, time_type delay) {
+process clock_proc(simulation &sim, char const *name, time_type delay) {
   while (true) {
     std::cout << "[" << sim.now() << "] " << name << std::endl;
     co_await sim.timeout(delay);

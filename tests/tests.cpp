@@ -1,20 +1,20 @@
 #include "catch2/catch_test_macros.hpp"
 #include "catch2/generators/catch_generators.hpp"
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 
 #include <string> // std::string
 
-simcpp20::event<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
-                          double expected_time, bool &finished) {
+simcpp20::process<> awaiter(simcpp20::simulation<> &sim, simcpp20::event<> ev,
+                            double expected_time, bool &finished) {
   REQUIRE(sim.now() == 0);
   co_await ev;
   REQUIRE(sim.now() == expected_time);
   finished = true;
 };
 
-simcpp20::event<> ref_awaiter(simcpp20::simulation<> &sim,
-                              simcpp20::event<> &ev, double expected_time,
-                              bool &finished) {
+simcpp20::process<> ref_awaiter(simcpp20::simulation<> &sim,
+                                simcpp20::event<> &ev, double expected_time,
+                                bool &finished) {
   REQUIRE(sim.now() == 0);
   co_await ev;
   REQUIRE(sim.now() == expected_time);
@@ -88,7 +88,7 @@ TEST_CASE("any_of") {
 }
 
 template <typename Value>
-simcpp20::event<>
+simcpp20::process<>
 value_awaiter(simcpp20::simulation<> &sim, simcpp20::value_event<Value> ev,
               Value expected_value, double expected_time, bool &finished) {
   REQUIRE(sim.now() == 0);

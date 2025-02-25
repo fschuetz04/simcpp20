@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <random>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 #include "resource.hpp"
 
 struct config {
@@ -14,12 +14,12 @@ struct config {
   std::default_random_engine gen;
 };
 
-simcpp20::event<> wash(simcpp20::simulation<> &sim, config &conf, int id) {
+simcpp20::process<> wash(simcpp20::simulation<> &sim, config &conf, int id) {
   co_await sim.timeout(conf.wash_time);
   printf("[%4.1f] Car %d washed\n", sim.now(), id);
 }
 
-simcpp20::event<> car(simcpp20::simulation<> &sim, config &conf, int id) {
+simcpp20::process<> car(simcpp20::simulation<> &sim, config &conf, int id) {
   printf("[%4.1f] Car %d arrives\n", sim.now(), id);
 
   auto request = conf.machines.request();
@@ -33,7 +33,7 @@ simcpp20::event<> car(simcpp20::simulation<> &sim, config &conf, int id) {
   conf.machines.release();
 }
 
-simcpp20::event<> car_source(simcpp20::simulation<> &sim, config &conf) {
+simcpp20::process<> car_source(simcpp20::simulation<> &sim, config &conf) {
   for (int id = 1;; ++id) {
     if (id > conf.initial_cars) {
       co_await sim.timeout(conf.arrival_time_dist(conf.gen));

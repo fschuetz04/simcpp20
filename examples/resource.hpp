@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <queue>
 
-#include "fschuetz04/simcpp20.hpp"
+#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
 
 class resource {
 public:

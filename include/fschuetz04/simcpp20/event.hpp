@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>    // assert
-#include <cmath>      // std::log2
 #include <coroutine>  // std::coroutine_handle, std::suspend_never
 #include <cstddef>    // std::size_t
 #include <functional> // std::function, std::hash
@@ -11,9 +10,10 @@
 
 namespace simcpp20 {
 template <typename Time> class simulation;
+template <typename Time> class process;
 
 /**
- * One event.
+ * An event that can be awaited, triggered, and aborted.
  *
  * @tparam Time Type used for simulation time.
  */
@@ -72,8 +72,6 @@ public:
   /**
    * Set the event state to triggered and schedule it to be processed
    * immediately. If the event is not pending, nothing is done.
-   *
-   * TODO(fschuetz04): Check whether used on a process?
    */
   void trigger() const {
     assert(data_);
@@ -89,9 +87,6 @@ public:
   /**
    * Set the event state to aborted. If the event is not pending, nothing is
    * done.
-   *
-   * TODO(fschuetz04): Check whether used on a process? Destroy process
-   * coroutine?
    */
   void abort() const {
     assert(data_);
@@ -226,8 +221,8 @@ public:
     /// Destructor.
     virtual ~generic_promise_type() { sim_.handles_.erase(handle_); };
 
-    /// @return Event associated with the process.
-    virtual const event<Time> &process_event() const = 0;
+    /// @return Whether this process is aborted.
+    virtual bool is_aborted() const = 0;
 
     /// @return Coroutine handle associated with the process.
     std::coroutine_handle<> process_handle() const { return handle_; }
@@ -257,81 +252,6 @@ public:
     std::coroutine_handle<> handle_;
   };
 
-  /// Promise type for a coroutine returning an event.
-  class promise_type : public generic_promise_type {
-  public:
-    using handle_type = std::coroutine_handle<promise_type>;
-
-    /**
-     * Constructor.
-     *
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param sim Reference to the simulation.
-     */
-    template <typename... Args>
-    explicit promise_type(simulation<Time> &sim, Args &&...)
-        : generic_promise_type{sim, handle_type::from_promise(*this)},
-          ev_{sim} {}
-
-    /**
-     * Constructor.
-     *
-     * @tparam Class Class type if the coroutine function is a lambda or a
-     * member function of a class.
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param sim Reference to the simulation.
-     */
-    template <typename Class, typename... Args>
-    explicit promise_type(Class &&, simulation<Time> &sim, Args &&...)
-        : generic_promise_type{sim, handle_type::from_promise(*this)},
-          ev_{sim} {}
-
-    /**
-     * Constructor.
-     *
-     * @tparam Class Class type if the coroutine function is a member function
-     * of a class. Must contain a member variable sim referencing the simulation
-     * instance.
-     * @tparam Args Types of additional arguments passed to the coroutine
-     * function.
-     * @param c Class instance.
-     */
-    template <typename Class, typename... Args>
-    explicit promise_type(Class &&c, Args &&...)
-        : generic_promise_type{c.sim, handle_type::from_promise(*this)},
-          ev_{c.sim} {}
-
-#ifdef __INTELLISENSE__
-    // IntelliSense fix. See https://stackoverflow.com/q/67209981.
-    promise_type();
-#endif
-
-    /// @return Event associated with the process.
-    const event<Time> &process_event() const override { return ev_; }
-
-    /**
-     * Called to get the return value of the coroutine function.
-     *
-     * @return Event associated with the coroutine. This event is triggered
-     * when the coroutine returns.
-     */
-    event<Time> get_return_object() const { return ev_; }
-
-    /**
-     * Called when the coroutine returns. Trigger the event associated with the
-     * coroutine.
-     */
-    void return_void() const { ev_.trigger(); }
-
-    /**
-     * Event associated with the coroutine. This event is triggered when the
-     * coroutine returns.
-     */
-    event<Time> ev_;
-  };
-
 protected:
   /**
    * Set the event state to processed, resume all coroutines awaiting this
@@ -349,7 +269,7 @@ protected:
     std::vector<generic_promise_type *> temp_promises;
     data_->promises_.swap(temp_promises);
     for (auto &promise : temp_promises) {
-      if (promise->process_event().aborted()) {
+      if (promise->is_aborted()) {
         promise->process_handle().destroy();
       } else {
         promise->process_handle().resume();
