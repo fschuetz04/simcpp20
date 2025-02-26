@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <random>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 struct config {
   double repair_time;

@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::process<> consumer(simcpp20::simulation<> &sim,
                              simcpp20::value_event<int> ev) {

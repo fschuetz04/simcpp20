@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <queue>
 
-#include "simulation.hpp" // IWYU pragma: export
+#include "simulation.hpp"
 
 namespace simcpp20 {
 

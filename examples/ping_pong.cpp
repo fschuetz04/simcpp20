@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 struct ev_type;
 using ev_inner = simcpp20::value_event<ev_type>;

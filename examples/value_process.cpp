@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::value_process<int> producer(simcpp20::simulation<> &sim) {
   co_await sim.timeout(1);

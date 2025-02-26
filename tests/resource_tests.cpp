@@ -1,5 +1,5 @@
 #include "catch2/catch_test_macros.hpp"
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 #include <vector> // std::vector
 
