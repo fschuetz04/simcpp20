@@ -17,6 +17,7 @@
 #include "value_event.hpp"
 
 namespace simcpp20 {
+
 using id_type = std::uint64_t;
 
 /**
@@ -312,4 +313,5 @@ private:
 
   friend class internal::generic_promise_type<Time>;
 };
+
 } // namespace simcpp20

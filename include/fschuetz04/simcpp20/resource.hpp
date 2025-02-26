@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <queue>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "simulation.hpp" // IWYU pragma: export
+
+namespace simcpp20 {
 
 class resource {
 public:
@@ -42,3 +44,5 @@ private:
     }
   }
 };
+
+} // namespace simcpp20

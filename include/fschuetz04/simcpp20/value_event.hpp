@@ -7,6 +7,7 @@
 #include "event.hpp"
 
 namespace simcpp20 {
+
 /**
  * One event with a value.
  *
@@ -101,4 +102,5 @@ private:
 
   friend class simulation<Time>;
 };
+
 } // namespace simcpp20

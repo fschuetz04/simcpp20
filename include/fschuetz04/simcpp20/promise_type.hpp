@@ -4,10 +4,14 @@
 #include <coroutine> // std::coroutine_handle, std::suspend_never
 
 namespace simcpp20 {
+
 template <typename Time> class simulation;
 template <typename Time> class event;
 
-namespace internal {
+} // namespace simcpp20
+
+namespace simcpp20::internal {
+
 /**
  * Abstract base class for all promise types.
  *
@@ -54,5 +58,5 @@ public:
   /// Coroutine handle.
   std::coroutine_handle<> handle_;
 };
-} // namespace internal
-} // namespace simcpp20
+
+} // namespace simcpp20::internal
