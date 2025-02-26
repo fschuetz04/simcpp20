@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::process<> clock_proc(simcpp20::simulation<> &sim, char const *name,
                                double delay) {

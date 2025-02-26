@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 
 simcpp20::process<> process(simcpp20::simulation<> &sim) {
   printf("[%.0f] 1\n", sim.now());

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
+#include "fschuetz04/simcpp20.hpp"
 #include "units.h"
 
 using namespace units::literals;
