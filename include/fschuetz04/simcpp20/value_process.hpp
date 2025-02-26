@@ -9,6 +9,7 @@
 #include "value_event.hpp"
 
 namespace simcpp20 {
+
 template <typename Time> class simulation;
 
 /**

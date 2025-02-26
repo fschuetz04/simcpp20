@@ -4,11 +4,10 @@
 #include <random>
 
 #include "fschuetz04/simcpp20.hpp" // IWYU pragma: export
-#include "resource.hpp"
 
 struct config {
   double repair_time;
-  resource repair_man;
+  simcpp20::resource repair_man;
   std::normal_distribution<> time_for_part_dist;
   std::exponential_distribution<> time_to_failure_dist;
   std::default_random_engine gen;
@@ -68,7 +67,7 @@ int main() {
   std::random_device rd;
   config conf{
       .repair_time = 30,
-      .repair_man = resource{sim, 1},
+      .repair_man = simcpp20::resource{sim, 1},
       .time_for_part_dist = std::normal_distribution<>{10, 2},
       .time_to_failure_dist = std::exponential_distribution<>{1. / 300},
       .gen = std::default_random_engine{rd()},

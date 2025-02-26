@@ -8,6 +8,7 @@
 #include "promise_type.hpp"
 
 namespace simcpp20 {
+
 template <typename Time> class simulation;
 template <typename Value, typename Time> class value_process;
 
@@ -182,4 +183,5 @@ public:
     process<Time> proc_;
   };
 };
+
 } // namespace simcpp20

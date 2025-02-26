@@ -11,6 +11,7 @@
 #include "promise_type.hpp"
 
 namespace simcpp20 {
+
 template <typename Time> class simulation;
 template <typename Time> class process;
 
@@ -311,4 +312,5 @@ template <typename Time> struct hash<simcpp20::event<Time>> {
     return std::hash<decltype(ev.data_.get())>()(ev.data_.get());
   }
 };
+
 } // namespace std
