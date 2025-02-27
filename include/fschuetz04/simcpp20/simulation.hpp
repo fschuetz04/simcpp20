@@ -187,7 +187,7 @@ private:
       any_of_ev.trigger();
     } else {
       current_ev.add_callback(
-          [any_of_ev](const auto &) mutable { any_of_ev.trigger(); });
+          [any_of_ev](const auto &) { any_of_ev.trigger(); });
     }
 
     return any_of_ev;
@@ -208,7 +208,7 @@ private:
     if (current_ev.processed()) {
       any_of_ev.trigger(current_ev.value());
     } else {
-      current_ev.add_callback([any_of_ev, current_ev](const auto &) mutable {
+      current_ev.add_callback([any_of_ev, current_ev](const auto &) {
         any_of_ev.trigger(current_ev.value());
       });
     }
@@ -248,7 +248,7 @@ private:
     if (!current_ev.processed()) {
       ++*n_ptr;
 
-      current_ev.add_callback([all_of_ev, n_ptr](const auto &) mutable {
+      current_ev.add_callback([all_of_ev, n_ptr](const auto &) {
         if (--*n_ptr == 0) {
           all_of_ev.trigger();
         }
