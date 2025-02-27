@@ -15,6 +15,7 @@ set(TARGETS
   clocks_units
   machine_shop
   ping_pong
+  store
   value_event
   value_process)
 
