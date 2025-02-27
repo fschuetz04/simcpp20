@@ -97,8 +97,7 @@ TEST_CASE("resource with aborted requests") {
     resource_user(sim, res, 10, usage_times);
 
     // queued, gives up after waiting until t=5
-    auto second_process = [&](simcpp20::simulation<> &sim,
-                              simcpp20::resource &res) -> simcpp20::process<> {
+    [&res, &usage_times, &second_timed_out](auto &sim) -> simcpp20::process<> {
       auto request = res.request();
       auto timeout = sim.timeout(5);
 
@@ -114,7 +113,7 @@ TEST_CASE("resource with aborted requests") {
         second_timed_out = true;
         request.abort();
       }
-    }(sim, res);
+    }(sim);
 
     // queued, gets resource at t=10, uses until t=15
     resource_user(sim, res, 5, usage_times);

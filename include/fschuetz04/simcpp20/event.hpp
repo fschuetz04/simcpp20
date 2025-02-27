@@ -247,8 +247,7 @@ protected:
     /// Event is not yet triggered or aborted.
     pending,
 
-    /// Event is triggered and will be processed at the current simulation
-    /// time.
+    /// Event is triggered and will be processed at the current simulation time.
     triggered,
 
     /// Event is processed.
@@ -299,9 +298,11 @@ protected:
   friend class simulation<Time>;
   friend struct std::hash<event<Time>>;
 };
+
 } // namespace simcpp20
 
 namespace std {
+
 /// Specialization of std::hash for simcpp20::event.
 template <typename Time> struct hash<simcpp20::event<Time>> {
   /**

@@ -35,30 +35,35 @@ public:
 
   /**
    * Check if the process is pending.
+   *
    * @return Whether the process is pending.
    */
   bool pending() const { return event_.pending(); }
 
   /**
    * Check if the process is triggered or processed.
+   *
    * @return Whether the process is triggered or processed.
    */
   bool triggered() const { return event_.triggered(); }
 
   /**
    * Check if the process is processed.
+   *
    * @return Whether the process is processed.
    */
   bool processed() const { return event_.processed(); }
 
   /**
    * Check if the process is aborted.
+   *
    * @return Whether the process is aborted.
    */
   bool aborted() const { return event_.aborted(); }
 
   /**
    * Add a callback to be called when the process is processed.
+   *
    * @param cb Callback to be called when the process is processed.
    */
   void
