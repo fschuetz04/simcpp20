@@ -25,6 +25,9 @@ public:
   explicit value_event(simulation<Time> &sim)
       : event<Time>{std::make_shared<data>(sim)} {}
 
+  /// Destructor.
+  ~value_event() override = default;
+
   /**
    * Set the event state to triggered, and schedule it to be processed
    * immediately. If the event is not pending, nothing is done.
@@ -85,7 +88,7 @@ private:
     using event<Time>::data::data;
 
     /// Destructor.
-    ~data() override {}
+    ~data() override = default;
 
     /// Value of the event.
     std::shared_ptr<Value> value_;

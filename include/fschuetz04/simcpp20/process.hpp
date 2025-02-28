@@ -159,6 +159,9 @@ public:
     promise_type();
 #endif
 
+    /// Destructor.
+    ~promise_type() override = default;
+
     /// @return Whether this process is aborted.
     bool is_aborted() const override { return proc_.aborted(); }
 

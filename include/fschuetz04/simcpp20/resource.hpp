@@ -17,7 +17,7 @@ public:
    * @param sim Reference to the simulation.
    * @param available Number of available instances. Defaults to 0.
    */
-  resource(simulation<> &sim, uint64_t available = 0)
+  explicit resource(simulation<> &sim, uint64_t available = 0)
       : sim_{sim}, available_{available} {}
 
   /**
@@ -44,7 +44,7 @@ public:
 
 private:
   /// Pending request events.
-  std::queue<event<>> requests_{};
+  std::queue<event<>> requests_ = {};
 
   /// Reference to the simulation.
   simulation<> &sim_;

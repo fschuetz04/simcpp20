@@ -24,7 +24,8 @@ public:
    * @param capacity Maximum number of items the store can hold. Defaults to
    * unlimited.
    */
-  store(simulation<> &sim, size_t capacity = std::numeric_limits<size_t>::max())
+  explicit store(simulation<> &sim,
+                 size_t capacity = std::numeric_limits<size_t>::max())
       : sim_{sim}, capacity_{capacity} {}
 
   /**

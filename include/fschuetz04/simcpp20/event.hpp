@@ -30,7 +30,7 @@ public:
   explicit event(simulation<Time> &sim) : data_{std::make_shared<data>(sim)} {}
 
   /// Destructor.
-  virtual ~event() {}
+  virtual ~event() = default;
 
   /**
    * Copy constructor.
@@ -268,7 +268,7 @@ protected:
     explicit data(simulation<Time> &sim) : sim_{sim} {}
 
     /// Destructor.
-    virtual ~data() {}
+    virtual ~data() = default;
 
     /// State of the event.
     state state_ = state::pending;

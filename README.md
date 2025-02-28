@@ -61,8 +61,8 @@ build/examples/clocks
 The CMake configuration has been tested with GCC (version 10 or later), Clang (version
 14 or later) and MSVC.
 If such a version is available under a different name (for example `g++-10`), you
-can try `CXX=g++-10 cmake ..` instead of just `cmake ..` to set the C++ compiler
-command.
+can try `CXX=g++-10 cmake -B build` instead of just `cmake -B build` to set the C++
+compiler command.
 When using an MSVC compiler, it must be of version 19.28 or later (Visual Studio
 2019 version 16.8 or later).
 Contributions to improve compiler support are welcome!
