@@ -1,40 +1,62 @@
 #pragma once
 
-#include <cstdint>
-#include <queue>
+#include <cstdint> // uint64_t
+#include <queue>   // std::queue
 
+#include "event.hpp"
 #include "simulation.hpp"
 
 namespace simcpp20 {
 
+/// A shared resource holding a number of instances.
 class resource {
 public:
-  resource(simcpp20::simulation<> &sim, uint64_t available)
-      : sim{sim}, available_{available} {}
+  /**
+   * Constructor.
+   *
+   * @param sim Reference to the simulation.
+   * @param available Number of available instances. Defaults to 0.
+   */
+  resource(simulation<> &sim, uint64_t available = 0)
+      : sim_{sim}, available_{available} {}
 
-  simcpp20::event<> request() {
-    auto ev = sim.event();
-    evs.push(ev);
-    trigger_evs();
+  /**
+   * Request an instance of the resource.
+   *
+   * @return An event that will be triggered once an instance is available,
+   * which may be immediately.
+   */
+  event<> request() {
+    auto ev = sim_.event();
+    requests_.push(ev);
+    trigger_requests();
     return ev;
   }
 
+  /// Release an instance of the resource.
   void release() {
     ++available_;
-    trigger_evs();
+    trigger_requests();
   }
 
+  /// @return Number of available instance.
   uint64_t available() { return available_; }
 
 private:
-  std::queue<simcpp20::event<>> evs{};
-  simcpp20::simulation<> &sim;
+  /// Pending request events.
+  std::queue<event<>> requests_{};
+
+  /// Reference to the simulation.
+  simulation<> &sim_;
+
+  /// Number of available instances.
   uint64_t available_;
 
-  void trigger_evs() {
-    while (available() > 0 && evs.size() > 0) {
-      auto ev = evs.front();
-      evs.pop();
+  /// Triggger pending request events until the resource is empty.
+  void trigger_requests() {
+    while (available() > 0 && requests_.size() > 0) {
+      auto ev = requests_.front();
+      requests_.pop();
       if (ev.aborted()) {
         continue;
       }

@@ -32,7 +32,6 @@ using id_type = std::uint64_t;
 template <typename Time = double> class simulation {
 private:
   using event_type = simcpp20::event<Time>;
-  using process_type = simcpp20::process<Time>;
 
 public:
   /// Destructor.
