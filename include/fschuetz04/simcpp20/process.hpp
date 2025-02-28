@@ -4,6 +4,7 @@
 #include <coroutine>  // std::coroutine_handle
 #include <functional> // std::function
 
+#include "awaitable.hpp"
 #include "event.hpp"
 #include "promise_type.hpp"
 
@@ -17,7 +18,7 @@ template <typename Value, typename Time> class value_process;
  *
  * @tparam Time Type used for simulation time.
  */
-template <typename Time = double> class process {
+template <typename Time = double> class process : public awaitable {
 public:
   /**
    * Constructor.
@@ -31,35 +32,24 @@ public:
    */
   void abort() const { event_.abort(); }
 
-  /**
-   * Check if the process is pending.
-   * @return Whether the process is pending.
-   */
-  bool pending() const { return event_.pending(); }
+  /// @return Whether the process is pending.
+  bool pending() const override { return event_.pending(); }
+
+  /// @return Whether the process is triggered or processed.
+  bool triggered() const override { return event_.triggered(); }
+
+  /// @return Whether the process is processed.
+  bool processed() const override { return event_.processed(); }
+
+  /// @return Whether the process is aborted.
+  bool aborted() const override { return event_.aborted(); }
 
   /**
-   * Check if the process is triggered or processed.
-   * @return Whether the process is triggered or processed.
+   * Add a callback to be called when the awaitable is processed.
+   *
+   * @param cb Callback.
    */
-  bool triggered() const { return event_.triggered(); }
-
-  /**
-   * Check if the process is processed.
-   * @return Whether the process is processed.
-   */
-  bool processed() const { return event_.processed(); }
-
-  /**
-   * Check if the process is aborted.
-   * @return Whether the process is aborted.
-   */
-  bool aborted() const { return event_.aborted(); }
-
-  /**
-   * Add a callback to be called when the process is processed.
-   * @param cb Callback to be called when the process is processed.
-   */
-  void add_callback(std::function<void(const event<Time> &)> cb) const {
+  void add_callback(std::function<void()> cb) const override {
     event_.add_callback(cb);
   }
 
@@ -88,11 +78,36 @@ public:
    */
   void await_resume() { event_.await_resume(); }
 
+  // TODO: remove?
   // Make value_process able to access the process internals
   template <typename Value, typename T> friend class value_process;
 
   // Make simulation able to access protected methods
   friend class simulation<Time>;
+
+  /**
+   * Alias for simulation::any_of.
+   *
+   * @param other Other awaitable.
+   * @return New pending event which is triggered when this process or the other
+   * awaitable is processed.
+   */
+  template <typename Awaitable>
+  event<Time> operator|(const Awaitable &other) const {
+    return event_ | other;
+  }
+
+  /**
+   * Alias for simulation::all_of.
+   *
+   * @param other Other awaitable.
+   * @return New pending event which is triggered when this process and the
+   * other awaitable are processed.
+   */
+  template <typename Awaitable>
+  event<Time> operator&(const Awaitable &other) const {
+    return event_ & other;
+  }
 
 protected:
   /**

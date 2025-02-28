@@ -79,9 +79,9 @@ public:
   }
 
   /**
-   * @param evs List of events.
-   * @return New pending event which is triggered when any of the given events
-   * is processed.
+   * @param evs List of awaitables.
+   * @return New pending event which is triggered when any of the given
+   * awaitables is processed.
    */
   template <typename... Args> event_type any_of(Args &&...evs) {
     return any_of_internal(event(), std::forward<Args>(evs)...);
@@ -89,9 +89,9 @@ public:
 
   /**
    * @tparam Value Value type of the event.
-   * @param evs List of events.
+   * @param evs List of awaitables.
    * @return New pending value event which is triggered when any of the given
-   * events is processed.
+   * awaitables is processed.
    */
   template <typename Value, typename... Args>
   value_event<Value, Time> any_of(Args &&...evs) {
@@ -99,9 +99,9 @@ public:
   }
 
   /**
-   * @param evs List of events.
-   * @return New pending event which is triggered when all of the given events
-   * are processed.
+   * @param evs List of awaitables.
+   * @return New pending event which is triggered when all of the given
+   * awaitables are processed.
    */
   template <typename... Args> event_type all_of(Args &&...evs) {
     auto n_ptr = std::make_shared<std::size_t>(0);
@@ -159,41 +159,48 @@ public:
 
 private:
   /**
-   * Consumes one event for `any_of` and forwards the remaining events.
+   * Consumes one awaitable for `any_of` and forwards the remaining awaitables.
    *
-   * @tparam Event Type of the current event.
-   * @tparam Args Type of the remaining events.
-   * @param any_of_ev Event to trigger when any one of the events is processed.
-   * @param current_ev Event to consume.
-   * @param next_evs Remaining events to forward.
-   * @return Event that is triggered when any one of the events is processed.
+   * @tparam Event Type of the event to return.
+   * @tparam Current Type of the current awaitable.
+   * @tparam Args Type of the remaining awaitables.
+   * @param any_of_ev Event to trigger when any one of the awaitables is
+   * processed.
+   * @param current_ev Awaitable to consume.
+   * @param next_evs Remaining awaitables to forward.
+   * @return Event that is triggered when any one of the awaitables is
+   * processed.
    */
-  template <typename Event, typename... Args>
-  Event any_of_internal(Event any_of_ev, Event current_ev, Args &&...next_evs) {
+  template <typename Event, typename Current, typename... Args>
+  Event any_of_internal(Event any_of_ev, Current current_ev,
+                        Args &&...next_evs) {
     any_of_internal(any_of_ev, current_ev);
     return any_of_internal(any_of_ev, std::forward<Args>(next_evs)...);
   }
 
   /**
-   * Consumes the final event for `any_of`.
+   * Consumes the final awaitable for `any_of`.
    *
-   * @param any_of_ev Event to trigger when any one of the events is processed.
-   * @param current_ev Event to consume.
-   * @return Event that is triggered when any one of the events is processed.
+   * @param any_of_ev Event to trigger when any one of the awaitables is
+   * processed.
+   * @param current_ev Awaitable to consume.
+   * @return Event that is triggered when any one of the awaitables is
+   * processed.
    */
-  event_type any_of_internal(event_type any_of_ev, event_type current_ev) {
+  template <typename Awaitable>
+  event_type any_of_internal(event_type any_of_ev,
+                             const Awaitable &current_ev) {
     if (current_ev.processed()) {
       any_of_ev.trigger();
     } else {
-      current_ev.add_callback(
-          [any_of_ev](const auto &) { any_of_ev.trigger(); });
+      current_ev.add_callback([any_of_ev]() { any_of_ev.trigger(); });
     }
 
     return any_of_ev;
   }
 
   /**
-   * Consumes the final event for `any_of` with `value_event`.
+   * Consumes the final awaitable for `any_of` with `value_event`.
    *
    * @tparam Value Value type of `value_event`.
    * @param any_of_ev Event to trigger when any one of the events is processed.
@@ -207,47 +214,47 @@ private:
     if (current_ev.processed()) {
       any_of_ev.trigger(current_ev.value());
     } else {
-      current_ev.add_callback([any_of_ev, current_ev](const auto &) {
-        any_of_ev.trigger(current_ev.value());
-      });
+      current_ev.add_callback(
+          [any_of_ev, current_ev]() { any_of_ev.trigger(current_ev.value()); });
     }
 
     return any_of_ev;
   }
 
   /**
-   * Consumes one event for `all_of` and forwards the remaining events.
+   * Consumes one awaitable for `all_of` and forwards the remaining awaitables.
    *
-   * @tparam Args Type of the remaining events.
-   * @param all_of_ev Event to trigger when all of the events are processed.
-   * @param n_ptr Number of events not yet processed.
-   * @param current_ev Event to consume.
-   * @param next_evs Remaining events to forward.
-   * @return Event that is triggered when all of the events are processed.
+   * @tparam Args Type of the remaining awaitables.
+   * @param all_of_ev Event to trigger when all of the awaitables are processed.
+   * @param n_ptr Number of awaitables not yet processed.
+   * @param current_ev Awaitable to consume.
+   * @param next_evs Remaining awaitables to forward.
+   * @return Event that is triggered when all of the awaitables are processed.
    */
-  template <typename... Args>
+  template <typename Awaitable, typename... Args>
   event_type all_of_internal(event_type all_of_ev,
                              std::shared_ptr<size_t> n_ptr,
-                             event_type current_ev, Args &&...next_evs) {
+                             Awaitable current_ev, Args &&...next_evs) {
     all_of_internal(all_of_ev, n_ptr, current_ev);
     return all_of_internal(all_of_ev, n_ptr, std::forward<Args>(next_evs)...);
   }
 
   /**
-   * Consumes the final event for `all_of`.
+   * Consumes the final awaitable for `all_of`.
    *
-   * @param all_of_ev Event to trigger when all of the events are processed.
-   * @param n_ptr Number of events not yet processed.
-   * @param current_ev Event to consume.
-   * @return Event that is triggered when all of the events are processed.
+   * @param all_of_ev Event to trigger when all of the awaitables are processed.
+   * @param n_ptr Number of awaitables not yet processed.
+   * @param current_ev Awaitable to consume.
+   * @return Event that is triggered when all of the awaitables are processed.
    */
+  template <typename Awaitable>
   event_type all_of_internal(event_type all_of_ev,
                              std::shared_ptr<size_t> n_ptr,
-                             event_type current_ev) {
+                             Awaitable current_ev) {
     if (!current_ev.processed()) {
       ++*n_ptr;
 
-      current_ev.add_callback([all_of_ev, n_ptr](const auto &) {
+      current_ev.add_callback([all_of_ev, n_ptr]() {
         if (--*n_ptr == 0) {
           all_of_ev.trigger();
         }

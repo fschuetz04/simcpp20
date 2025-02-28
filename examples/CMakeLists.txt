@@ -9,6 +9,7 @@ FetchContent_MakeAvailable(units)
 set(TARGETS
   all_of
   any_of
+  any_of_process
   bank_renege
   carwash
   clocks

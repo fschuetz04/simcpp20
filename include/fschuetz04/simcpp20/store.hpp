@@ -38,7 +38,7 @@ public:
     auto ev = sim_.event<T>();
 
     // add callback to trigger puts when this get is processed
-    ev.add_callback([this](const auto &) { trigger_puts(); });
+    ev.add_callback([this]() { trigger_puts(); });
 
     // queue the get event
     gets_.push(ev);
@@ -72,7 +72,7 @@ public:
     auto ev = sim_.event();
 
     // add callback to trigger gets when this put is processed
-    ev.add_callback([this](const auto &) { trigger_gets(); });
+    ev.add_callback([this]() { trigger_gets(); });
 
     // queue the put event
     puts_.emplace(ev, std::move(value));

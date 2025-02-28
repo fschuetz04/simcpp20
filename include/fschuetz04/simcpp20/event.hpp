@@ -8,6 +8,7 @@
 #include <utility>    // std::exchange, std::move
 #include <vector>     // std::vector
 
+#include "awaitable.hpp"
 #include "promise_type.hpp"
 
 namespace simcpp20 {
@@ -20,7 +21,7 @@ template <typename Time> class process;
  *
  * @tparam Time Type used for simulation time.
  */
-template <typename Time = double> class event {
+template <typename Time = double> class event : public awaitable {
 public:
   /**
    * Constructor.
@@ -109,8 +110,12 @@ public:
     }
   }
 
-  /// @param cb Callback to be called when the event is processed.
-  void add_callback(std::function<void(const event<Time> &)> cb) const {
+  /**
+   * Add a callback to be called when the awaitable is processed.
+   *
+   * @param cb Callback.
+   */
+  void add_callback(std::function<void()> cb) const override {
     assert(data_);
 
     if (processed() || aborted()) {
@@ -121,25 +126,25 @@ public:
   }
 
   /// @return Whether the event is pending.
-  bool pending() const {
+  bool pending() const override {
     assert(data_);
     return data_->state_ == state::pending;
   }
 
   /// @return Whether the event is triggered or processed.
-  bool triggered() const {
+  bool triggered() const override {
     assert(data_);
     return data_->state_ == state::triggered || processed();
   }
 
   /// @return Whether the event is processed.
-  bool processed() const {
+  bool processed() const override {
     assert(data_);
     return data_->state_ == state::processed;
   }
 
   /// @return Whether the event is aborted.
-  bool aborted() const {
+  bool aborted() const override {
     assert(data_);
     return data_->state_ == state::aborted;
   }
@@ -182,11 +187,11 @@ public:
   /**
    * Alias for simulation::any_of.
    *
-   * @param other Other event.
+   * @param other Other awaitable.
    * @return New pending event which is triggered when this event or the other
-   * event is processed.
+   * awaitable is processed.
    */
-  event<Time> operator|(const event<Time> &other) const {
+  event<Time> operator|(const awaitable &other) const {
     assert(data_);
     return data_->sim_.any_of(*this, other);
   }
@@ -194,11 +199,12 @@ public:
   /**
    * Alias for simulation::all_of.
    *
-   * @param other Other event.
+   * @param other Other awaitable.
    * @return New pending event which is triggered when this event and the other
-   * event are processed.
+   * awaitable are processed.
    */
-  event<Time> operator&(const event<Time> &other) const {
+  template <typename Awaitable>
+  event<Time> operator&(const Awaitable &other) const {
     assert(data_);
     return data_->sim_.all_of(*this, other);
   }
@@ -237,7 +243,7 @@ protected:
     }
 
     for (auto &cb : data_->cbs_) {
-      cb(*this);
+      cb();
     }
     data_->cbs_.clear();
   }
@@ -277,7 +283,7 @@ protected:
     std::vector<internal::generic_promise_type<Time> *> promises_ = {};
 
     /// Callbacks added to the event.
-    std::vector<std::function<void(const event<Time> &)>> cbs_ = {};
+    std::vector<std::function<void()>> cbs_ = {};
 
     /// Reference to the simulation.
     simulation<Time> &sim_;

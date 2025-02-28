@@ -66,10 +66,7 @@ public:
    *
    * @param cb Callback to be called when the process is processed.
    */
-  void
-  add_callback(std::function<void(const value_event<Value, Time> &)> cb) const {
-    event_.add_callback(cb);
-  }
+  void add_callback(std::function<void()> cb) const { event_.add_callback(cb); }
 
   /**
    * Called when using co_await on the process. The calling coroutine is only
