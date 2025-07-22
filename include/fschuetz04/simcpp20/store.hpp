@@ -14,8 +14,9 @@ namespace simcpp20 {
  * A shared store holding objects.
  *
  * @tparam T Type of objects to store.
+ * @tparam Time Type of objects to store.
  */
-template <typename T> class store {
+template <typename T, typename Time = double> class store {
 public:
   /**
    * Constructor.
@@ -24,7 +25,7 @@ public:
    * @param capacity Maximum number of items the store can hold. Defaults to
    * unlimited.
    */
-  explicit store(simulation<> &sim,
+  explicit store(simulation<Time> &sim,
                  size_t capacity = std::numeric_limits<size_t>::max())
       : sim_{sim}, capacity_{capacity} {}
 
@@ -34,8 +35,8 @@ public:
    * @return An event that will be triggered with the next value
    * from the store once it is available, which may be immediately.
    */
-  value_event<T> get() {
-    auto ev = sim_.event<T>();
+  value_event<T, Time> get() {
+    auto ev = sim_.template event<T>();
 
     // add callback to trigger puts when this get is processed
     ev.add_callback([this]() { trigger_puts(); });
@@ -56,7 +57,7 @@ public:
    * @return An event that will be triggered when the store has capacity and the
    * value is added to the store, which may be immediately.
    */
-  event<> put(const T &value) {
+  event<Time> put(const T &value) {
     T copy = value;
     return put(std::move(copy));
   }
@@ -68,7 +69,7 @@ public:
    * @return An event that will be triggered when the store has capacity and the
    * value is added to the store, which may be immediately.
    */
-  event<> put(T &&value) {
+  event<Time> put(T &&value) {
     auto ev = sim_.event();
 
     // add callback to trigger gets when this put is processed
@@ -85,7 +86,7 @@ public:
 
 private:
   /// Reference to the simulation.
-  simulation<> &sim_;
+  simulation<Time> &sim_;
 
   /// Values currently in the store.
   std::queue<T> values_;
@@ -94,10 +95,10 @@ private:
   size_t capacity_;
 
   /// Pending get events.
-  std::queue<value_event<T>> gets_;
+  std::queue<value_event<T, Time>> gets_;
 
   /// Pairs of pending put events and the values to be put into the store.
-  std::queue<std::pair<event<>, T>> puts_;
+  std::queue<std::pair<event<Time>, T>> puts_;
 
   /// Trigger pending get events until the store is empty.
   void trigger_gets() {

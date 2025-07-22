@@ -7,7 +7,7 @@
 
 struct config {
   int n_customers;
-  simcpp20::resource counters;
+  simcpp20::resource<> counters;
   std::uniform_real_distribution<> max_wait_time_dist;
   std::exponential_distribution<> arrival_interval_dist;
   std::exponential_distribution<> service_time_dist;

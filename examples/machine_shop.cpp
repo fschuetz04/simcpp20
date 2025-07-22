@@ -7,7 +7,7 @@
 
 struct config {
   double repair_time;
-  simcpp20::resource repair_man;
+  simcpp20::resource<> repair_man;
   std::normal_distribution<> time_for_part_dist;
   std::exponential_distribution<> time_to_failure_dist;
   std::default_random_engine gen;
