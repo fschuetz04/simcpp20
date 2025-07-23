@@ -11,7 +11,7 @@ namespace simcpp20 {
 /**
  * A shared resource holding a number of instances.
  *
- * @tparam Time Type of objects to store.
+ * @tparam Time Type used for simulation time.
  */
 template <typename Time = double> class resource {
 public:

@@ -14,7 +14,7 @@ namespace simcpp20 {
  * A shared store holding objects.
  *
  * @tparam T Type of objects to store.
- * @tparam Time Type of objects to store.
+ * @tparam Time Type used for simulation time.
  */
 template <typename T, typename Time = double> class store {
 public:
