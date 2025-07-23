@@ -7,12 +7,12 @@ TEST_CASE("resource basics") {
   simcpp20::simulation<> sim;
 
   SECTION("resource can be created with initial available count") {
-    simcpp20::resource<> res(sim, 3);
+    simcpp20::resource res(sim, 3);
     REQUIRE(res.available() == 3);
   }
 
   SECTION("requesting and releasing resources") {
-    simcpp20::resource<> res(sim, 2);
+    simcpp20::resource res(sim, 2);
 
     // request first resource
     auto req1 = res.request();
@@ -53,7 +53,7 @@ TEST_CASE("resource queuing behavior") {
   std::vector<double> usage_times;
 
   SECTION("processes queue for limited resources") {
-    simcpp20::resource<> res(sim, 1);
+    simcpp20::resource res(sim, 1);
 
     // start three processes that want to use the resource
     // t=0, uses until t=10
@@ -69,7 +69,7 @@ TEST_CASE("resource queuing behavior") {
   }
 
   SECTION("multiple resources can serve multiple processes") {
-    simcpp20::resource<> res(sim, 2);
+    simcpp20::resource res(sim, 2);
 
     // Start three processes that want to use the resource
     // t=0, uses until t=10
@@ -90,7 +90,7 @@ TEST_CASE("resource with aborted requests") {
   std::vector<double> usage_times;
 
   SECTION("process with timeout can abort resource request") {
-    simcpp20::resource<> res(sim, 1);
+    simcpp20::resource res(sim, 1);
     bool second_timed_out = false;
 
     // t=0, uses until t=10
