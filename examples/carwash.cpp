@@ -8,7 +8,7 @@
 struct config {
   int initial_cars;
   double wash_time;
-  simcpp20::resource machines;
+  simcpp20::resource<> machines;
   std::uniform_int_distribution<> arrival_time_dist;
   std::default_random_engine gen;
 };
