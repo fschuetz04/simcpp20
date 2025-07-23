@@ -33,7 +33,7 @@ TEST_CASE("resource basics") {
 }
 
 simcpp20::process<> resource_user(simcpp20::simulation<> &sim,
-                                  simcpp20::resource &res, double use_time,
+                                  simcpp20::resource<> &res, double use_time,
                                   std::vector<double> &usage_times) {
   // request the resource
   co_await res.request();

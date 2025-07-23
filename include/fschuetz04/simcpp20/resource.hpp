@@ -8,8 +8,12 @@
 
 namespace simcpp20 {
 
-/// A shared resource holding a number of instances.
-class resource {
+/**
+ * A shared resource holding a number of instances.
+ *
+ * @tparam Time Type used for simulation time.
+ */
+template <typename Time = double> class resource {
 public:
   /**
    * Constructor.
@@ -17,7 +21,7 @@ public:
    * @param sim Reference to the simulation.
    * @param available Number of available instances. Defaults to 0.
    */
-  explicit resource(simulation<> &sim, uint64_t available = 0)
+  explicit resource(simulation<Time> &sim, uint64_t available = 0)
       : sim_{sim}, available_{available} {}
 
   /**
@@ -26,7 +30,7 @@ public:
    * @return An event that will be triggered once an instance is available,
    * which may be immediately.
    */
-  event<> request() {
+  event<Time> request() {
     auto ev = sim_.event();
     requests_.push(ev);
     trigger_requests();
@@ -44,10 +48,10 @@ public:
 
 private:
   /// Pending request events.
-  std::queue<event<>> requests_ = {};
+  std::queue<event<Time>> requests_ = {};
 
   /// Reference to the simulation.
-  simulation<> &sim_;
+  simulation<Time> &sim_;
 
   /// Number of available instances.
   uint64_t available_;
