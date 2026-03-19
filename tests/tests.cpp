@@ -167,3 +167,75 @@ TEST_CASE("all_of") {
     REQUIRE(finished);
   }
 }
+
+TEST_CASE("post event to simulation") {
+  simcpp20::simulation<> sim;
+
+  bool ran = false;
+  auto ev1 = sim.post([&ran]() { ran = true; });
+
+  sim.step();
+  REQUIRE(ran);
+  REQUIRE(ev1.processed());
+}
+
+TEST_CASE("post event ordering") {
+  simcpp20::simulation<> sim;
+
+  SECTION("between other pending events")
+  {
+    bool ran = false;
+
+    auto ev1 = sim.timeout(1);
+    auto ev2 = sim.post([&ran]() { ran = true; });
+
+    sim.step();
+    REQUIRE(ran);
+    REQUIRE(ev1.pending());
+    REQUIRE(ev2.processed());
+  }
+
+  SECTION("between multiple posted events")
+  {
+    bool ran1 = false;
+    bool ran2 = false;
+    bool ran3 = false;
+
+    auto ev1 = sim.post([&ran1]() { ran1 = true; });
+    auto ev2 = sim.post([&ran2]() { ran2 = true; });
+    auto ev3 = sim.post([&ran3]() { ran3 = true; });
+
+    sim.step();
+    REQUIRE(ran1);
+    REQUIRE_FALSE(ran2);
+    REQUIRE_FALSE(ran3);
+    
+    sim.step();
+    REQUIRE(ran1);
+    REQUIRE(ran2);
+    REQUIRE_FALSE(ran3);
+    
+    sim.step();
+    REQUIRE(ran1);
+    REQUIRE(ran2);
+    REQUIRE(ran3);
+  }
+}
+
+TEST_CASE("post event with delay to simulation") {
+  simcpp20::simulation<> sim;
+
+  bool ran1 = false;
+  bool ran2 = false;
+
+  auto ev1 = sim.post([&ran1]() { ran1 = true; }, 2.0);
+  auto ev2 = sim.post([&ran2]() { ran2 = true; }, 1.0);
+
+  sim.step();
+  REQUIRE_FALSE(ran1);
+  REQUIRE(ran2);
+  
+  sim.step();
+  REQUIRE(ran1);
+  REQUIRE(ran2);
+}
