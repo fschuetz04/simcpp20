@@ -127,11 +127,19 @@ public:
     sev.ev_.process();
   }
 
-  /// Run the simulation until no more events are scheduled.
-  void run() {
-    while (!empty()) {
+  /**
+   * Run the simulation until no more events are scheduled.
+   * 
+   * @return Number of events processed.
+   */
+  std::size_t run() {
+    std::size_t count = 0;
+
+    for (; !empty(); count++) {
       step();
     }
+
+    return count;
   }
 
   /**
@@ -140,15 +148,18 @@ public:
    * scheduled at or after the target time.
    *
    * @param target Target time.
+   * @return Number of events processed.
    */
-  void run_until(Time target) {
+  std::size_t run_until(Time target) {
     assert(target >= now());
+    std::size_t count = 0;
 
-    while (!empty() && scheduled_evs_.top().time_ < target) {
+    for (; !empty() && scheduled_evs_.top().time_ < target; count++) {
       step();
     }
 
     now_ = target;
+    return count;
   }
 
   /// @return Whether no events are scheduled.
